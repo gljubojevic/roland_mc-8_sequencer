@@ -54,6 +54,7 @@
     <Content Include="Global.asax" />
     <Content Include="Index.html" />
     <Content Include="MC8Analyzer.js" />
+    <Content Include="MC8BitStreamDecoder.js" />
     <Content Include="MC8Sequencer.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

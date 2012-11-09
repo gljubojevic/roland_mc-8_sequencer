@@ -25,16 +25,19 @@ function MC8FrequencyData(sampleRate, lastSample, hiPeriod, loPeriod)
 
 
 // Declare and make instance of analyzer object
-var MC8Analyzer = function()
+var MC8Analyzer = function ()
 {
+	// Self ref
+	var _analyzer = this;
+
 	// Config
 	var config = {
-		logViewId:null,
-		inputFileId:null,
-		btnPlayWaveId:null,
+		logViewId: null,
+		inputFileId: null,
+		btnPlayWaveId: null,
 		btnAnalyzeId: null,
-		btnClearLogId:null,
-		selLoFreqToleranceId:null,
+		btnClearLogId: null,
+		selLoFreqToleranceId: null,
 		selHiFreqToleranceId: null,
 		audioContainerId: null,
 		frequencyContainerId: null,
@@ -43,43 +46,44 @@ var MC8Analyzer = function()
 		hiFreqTolerance: 20
 	};
 
-	var _analyzer = this;
 	var audioContext = new window.webkitAudioContext(); 	// Create Audio Context
-	var bufferSource = audioContext.createBufferSource();	// Create buffer source;
+	var bufferSource = audioContext.createBufferSource(); // Create buffer source;
 
 	this.log = function ()
 	{
 		$(config.logViewId).append([].slice.call(arguments) + "\n")
 		console.log(
-			'MC8Analyzer', 
+			'MC8Analyzer',
 			[].slice.call(arguments)
 		);
 	};
 
-	this.logClear = function () {
+	this.logClear = function ()
+	{
 		$(config.logViewId).empty();
 	};
 
-//	this.createAudio = function()
-//	{
-//		processor = audioContext.createJavaScriptNode(2048, 1, 1);
-//		analyser = audioContext.createAnalyser();
+	//	this.createAudio = function()
+	//	{
+	//		processor = audioContext.createJavaScriptNode(2048, 1, 1);
+	//		analyser = audioContext.createAnalyser();
 
-//		bufferSource.connect(audioContext.destination);
-//		bufferSource.connect(analyser);
+	//		bufferSource.connect(audioContext.destination);
+	//		bufferSource.connect(analyser);
 
-//		analyser.connect(processor);
-//		processor.connect(audioContext.destination);
+	//		analyser.connect(processor);
+	//		processor.connect(audioContext.destination);
 
-//		bufferSource.noteOn(0);
-//	};
+	//		bufferSource.noteOn(0);
+	//	};
 
 	/////////////////////////////
 	// Normalize
 	/////////////////////////////
 	var _normalizeFactor = 1.0;
-	
-	this.findNormalizeFactor = function(data) {
+
+	this.findNormalizeFactor = function (data)
+	{
 		var tmp;
 		var max = Math.abs(data[0]);
 
@@ -93,7 +97,8 @@ var MC8Analyzer = function()
 		_normalizeFactor = 1.0 / max;
 	};
 
-	this.normalizeFilter = function(val) {
+	this.normalizeFilter = function (val)
+	{
 		return val * _normalizeFactor;
 	};
 
@@ -104,13 +109,13 @@ var MC8Analyzer = function()
 	var _quadFilterHiThreshold = 0;
 	var _quadFilterLoThreshold = 0;
 
-	this.setQuadFilterTreshold = function(treshold)
+	this.setQuadFilterTreshold = function (treshold)
 	{
 		_quadFilterHiThreshold = 1.0 * treshold;
 		_quadFilterLoThreshold = -1.0 * treshold;
 	}
 
-	this.quadraticFilter = function(val)
+	this.quadraticFilter = function (val)
 	{
 		if (val > 0)
 		{
@@ -140,7 +145,7 @@ var MC8Analyzer = function()
 	var _freqDetectLastVal;
 	var _freqDetectSampleRate;
 
-	this.simpleFreqDetection = function(val, pos)
+	this.simpleFreqDetection = function (val, pos)
 	{
 		detected = null;
 
@@ -173,11 +178,13 @@ var MC8Analyzer = function()
 		return detected;
 	};
 
-	this.frequencyDisplay= function(){
+	this.frequencyDisplay = function ()
+	{
 		// Display Frequencies
 		var freqTableBody = '';
-		for (var i = 0; i < _frequencyData.length; i++) {
-			freqTableBody+= '<tr>'
+		for (var i = 0; i < _frequencyData.length; i++)
+		{
+			freqTableBody += '<tr>'
 				+ '<td>' + _frequencyData[i].rowNo + '</td>'
 				+ '<td>' + _frequencyData[i].frequency() + '</td>'
 				+ '<td>' + _frequencyData[i].firstSample() + '</td>'
@@ -190,7 +197,8 @@ var MC8Analyzer = function()
 		$(config.frequencyContainerId + ' > table > tbody').append(freqTableBody);
 	};
 
-	this.frequencyDetect = function(){
+	this.frequencyDetect = function ()
+	{
 		var data = bufferSource.buffer.getChannelData(0);
 
 		this.findNormalizeFactor(data);
@@ -201,27 +209,36 @@ var MC8Analyzer = function()
 		_freqDetectHiPeriod = 0;
 		_freqDetectLoPeriod = 0;
 		_freqDetectSampleRate = bufferSource.buffer.sampleRate;
-		for (var i = 0; i < data.length; i++) {
+		for (var i = 0; i < data.length; i++)
+		{
 			var val = this.normalizeFilter(data[i]);
 			val = this.quadraticFilter(val);
-			
+
 			var freq = this.simpleFreqDetection(val, i);
-			if (null != freq) {
+			if (null != freq)
+			{
 				freq.rowNo = _frequencyData.length;
 				_frequencyData.push(freq);
 			}
 		}
 		this.log("Freq detected:" + _frequencyData.length);
 
-		this.frequencyDisplay();
+		// Slooooow
+		//this.frequencyDisplay();
 	}
+
+	/////////////////////////////
+	// BitStream decode
+	/////////////////////////////
+
 
 	/////////////////////////////
 	// Analyze
 	/////////////////////////////
 
 	// Analyze wave
-	this.analyzeAudioBuffer = function (){
+	this.analyzeAudioBuffer = function ()
+	{
 		this.frequencyDetect();
 	};
 
@@ -232,6 +249,7 @@ var MC8Analyzer = function()
 	// Just for playback of audio source
 	this.playAudioBuffer = function ()
 	{
+		//bufferSource.noteOff();
 		bufferSource.noteOn(0);
 	};
 
@@ -252,15 +270,17 @@ var MC8Analyzer = function()
 		if (audioContext.decodeAudioData)
 		{
 			audioContext.decodeAudioData(
-				evt.target.result, 
-				function(buffer){
+				evt.target.result,
+				function (buffer)
+				{
 					bufferSource.buffer = buffer;
 					bufferSource.connect(audioContext.destination);
 					$(config.btnAnalyzeId).prop('disabled', false);
 					$(config.btnPlayWaveId).prop('disabled', false);
 					_analyzer.log("Wave loaded");
 				},
-				function(e){
+				function (e)
+				{
 					_analyzer.log("cannot decode mp3", e);
 				}
 			);
@@ -277,15 +297,15 @@ var MC8Analyzer = function()
 	this.callbackLoadProgram = function (file)
 	{
 		var reader = new FileReader();
-		reader.onload = this.callbackAudioLoaded;	
+		reader.onload = this.callbackAudioLoaded;
 		reader.readAsArrayBuffer(file);
 
-//		reader.onloadend = function (evt)
-//		{
-//			if (evt.target.readyState == FileReader.DONE)
-//			{	$(audioContainerId).append('<audio src="' + evt.target.result + '" controls></audio>');		}
-//		};
-//		reader.readAsDataURL(file);
+		//		reader.onloadend = function (evt)
+		//		{
+		//			if (evt.target.readyState == FileReader.DONE)
+		//			{	$(audioContainerId).append('<audio src="' + evt.target.result + '" controls></audio>');		}
+		//		};
+		//		reader.readAsDataURL(file);
 	};
 
 	/////////////////////////////
@@ -296,23 +316,27 @@ var MC8Analyzer = function()
 	this.initAnalyzer = function ()
 	{
 		//File
-		$(config.inputFileId).change(function(){
+		$(config.inputFileId).change(function ()
+		{
 			_analyzer.callbackLoadProgram(this.files[0]);
 		});
 
 		// btn Play
-		$(config.btnPlayWaveId).click(function(){
+		$(config.btnPlayWaveId).click(function ()
+		{
 			_analyzer.playAudioBuffer();
 		});
 
 		// btn Analyze
-		$(config.btnAnalyzeId).click(function () {
+		$(config.btnAnalyzeId).click(function ()
+		{
 			_analyzer.analyzeAudioBuffer.call(_analyzer);
 			//_analyzer.analyzeAudioBuffer();
 		});
 
 		// btn log clear
-		$(config.btnClearLogId).click(function () {
+		$(config.btnClearLogId).click(function ()
+		{
 			_analyzer.logClear();
 		});
 
@@ -322,8 +346,9 @@ var MC8Analyzer = function()
 		loFreq.empty();
 		hiFreq.empty();
 
-		for (var i = 0; i < 55; i+=5) {
-			var opt = '<option value="'+i+'">'+i+'</option>';
+		for (var i = 0; i < 55; i += 5)
+		{
+			var opt = '<option value="' + i + '">' + i + '</option>';
 			loFreq.append(opt);
 			hiFreq.append(opt);
 		}
@@ -331,10 +356,12 @@ var MC8Analyzer = function()
 		$('option[value=' + config.loFreqTolerance + ']', loFreq).prop('selected', true);
 		$('option[value=' + config.hiFreqTolerance + ']', hiFreq).prop('selected', true);
 
-		loFreq.change(function(){
+		loFreq.change(function ()
+		{
 			config.loFreqTolerance = $(this).val();
 		});
-		hiFreq.change(function () {
+		hiFreq.change(function ()
+		{
 			config.hiFreqTolerance = $(this).val();
 		});
 	};
@@ -346,7 +373,7 @@ var MC8Analyzer = function()
 	// Public Methods/Variables
 	// All Public Methods and Variables are exported as public
 	return {
-		config:config,
+		config: config,
 		initAnalyzer: initAnalyzer
 	};
-}();
+} ();
