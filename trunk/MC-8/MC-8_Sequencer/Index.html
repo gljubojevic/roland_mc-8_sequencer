@@ -4,27 +4,70 @@
     <title>Roland MC-8 sequencer</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
 	<script src="MC8Analyzer.js" type="text/javascript"></script>
+	<script src="MC8Sequencer.js" type="text/javascript"></script>
 	<script type="text/javascript">
-		// Create reference
-		var Anaylzer = new MC8Analyzer();
-
-		// Start Analyzer and attach some events
+		// Start/Init
 		$(document).ready(function ()
 		{
-			Anaylzer.Init('#LoadMC8Data', '#MC8ProgramData');
+			// Init Analyzer
+			MC8Analyzer.config.logViewId = '#AnalyzeLog';
+			MC8Analyzer.config.inputFileId = '#FileLoadMC8Data';
+			MC8Analyzer.config.btnPlayWaveId = '#btnAnalyzerPlayWave';
+			MC8Analyzer.config.btnAnalyzeId = '#btnAnalyze';
+			MC8Analyzer.config.btnClearLogId = '#btnClearLog';
+			MC8Analyzer.config.audioContainerId = '#MC8ProgramDataAudio';
+			MC8Analyzer.config.selLoFreqToleranceId = '#loFreqTolerance';
+			MC8Analyzer.config.selHiFreqToleranceId = '#hiFreqTolerance';
+			MC8Analyzer.config.frequencyContainerId = '#freqTable';
+			MC8Analyzer.config.bitstreamContainerId = '#bitstreamTable';
+			MC8Analyzer.initAnalyzer();
+
+			// Init sequencer
+			MC8Sequencer.initSequencer();
 		});
 	</script>
 </head>
 <body>
 <h1>Roland MC-8 Sequencer</h1>
 <fieldset>
-	<legend>Analyzer</legend>
-	<label for="LoadMC8Data">MC-8 program data:</label><input type="file" name="WaveToAnlyze" id="LoadMC8Data" />
-	<div id="MC8ProgramDataAudio"></div>
-	<div id="AnalyzeLog"></div>
-</fieldset>
-<fieldset>
 	<legend>Sequencer</legend>
+</fieldset>
+
+<fieldset>
+	<legend>Analyzer</legend>
+	
+	<div>
+		<label for="FileLoadMC8Data">Program data audio:</label><input type="file" name="WaveToAnlyze" id="FileLoadMC8Data" />
+		<input type="button" value="Play" id="btnAnalyzerPlayWave" disabled="disabled" />
+	</div>
+	<div>
+		<label for="loFreqTolerance">LO Freq tolerance %:</label><select id="loFreqTolerance"></select>
+		<label for="hiFreqTolerance">HI Freq tolerance %:</label><select id="hiFreqTolerance"></select>
+		<input type="button" value="Analyze" id="btnAnalyze" disabled="disabled" />
+		<input type="button" value="Clear log" id="btnClearLog" />
+	</div>
+	<div id="MC8ProgramDataAudio"></div>
+
+	<pre id="AnalyzeLog" style="width:50%;height:300px;float:left;overflow:scroll;"></pre>
+	<div id="freqTable" style="width:25%;height:300px;float:left;overflow:auto;">
+		<table width="100%" border="1">
+			<caption>Frequency detected</caption>
+			<thead>
+				<tr>
+					<th>Row</th>
+					<th>Frequency</th>
+					<th>Hi period</th>
+					<th>Lo period</th>
+					<th>First sample</th>
+					<th>Last sample</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+	<div id="bitstreamTable" style="width:25%;height:300px;float:left;"></div>
+	<div style="clear:both;float:none;"></div>
 </fieldset>
 
 </body>
