@@ -55,7 +55,6 @@
     <Content Include="Index.html" />
     <Content Include="MC8Analyzer.js" />
     <Content Include="MC8BitStreamDecoder.js" />
-    <Content Include="MC8ByteDecoder.js" />
     <Content Include="MC8FrequencyDecoder.js" />
     <Content Include="MC8Sequencer.js" />
     <Content Include="Web.config" />
