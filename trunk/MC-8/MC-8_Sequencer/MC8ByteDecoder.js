@@ -1,0 +1,3 @@
+﻿function MC8ByteDecoder()
+{
+}

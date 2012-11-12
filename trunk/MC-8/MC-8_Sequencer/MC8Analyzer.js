@@ -88,8 +88,13 @@ var MC8Analyzer = function ()
 	{
 		freqDec = new MC8FrequencyDecoder();
 		freqDec.frequencyDetect(bufferSource.buffer.getChannelData(0), bufferSource.buffer.sampleRate);
-
 		this.log("Freq detected:" + freqDec._frequencyData.length);
+
+		bitStreamDec = new MC8BitStreamDecoder();
+		bitStreamDec.LoFreqTolerance = config.loFreqTolerance;
+		bitStreamDec.HiFreqTolerance = config.hiFreqTolerance;
+		bitStream = bitStreamDec.BitStreamDecode(freqDec._frequencyData);
+		this.log("BitStream:\n" + bitStream);
 	};
 
 	/////////////////////////////

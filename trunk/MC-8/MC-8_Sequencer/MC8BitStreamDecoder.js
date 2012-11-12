@@ -57,7 +57,7 @@ function MC8BitStreamDecoder()
 
 	this.DecodeOne = function()
 	{
-		if (this._freqLast == HIFreqHz && this._currentBit.Count == _maxHiPeriods)
+		if (this._freqLast == HIFreqHz && this._currentBit.Count() == _maxHiPeriods)
 		{
 			this.Decoded += '1';
 			this._currentBit.Value = 1;
@@ -70,7 +70,7 @@ function MC8BitStreamDecoder()
 
 	this.DecodeZero = function()
 	{
-		if (this._freqLast == LOFreqHz && this._currentBit.Count == _maxLoPeriods)
+		if (this._freqLast == LOFreqHz && this._currentBit.Count() == _maxLoPeriods)
 		{
 			this.Decoded += '0';
 			this._currentBit.Value = 0;
@@ -81,29 +81,14 @@ function MC8BitStreamDecoder()
 		}
 	}
 
-	this.Start = function()
-	{
-		// Work with half periods
-		_maxHiPeriods = LogicOneHIFreqPeriods * 2;
-		_maxLoPeriods = LogicZeroLOFreqPeriods * 2;
 
-		this.DecodedData = new Array();
-		this.Decoded = '';
-
-		this._bitNo = 0;
-		this._currentBit = new BitData(this._bitNo);
-
-		this._dataStarted = false;
-		this._freqLast = 0;
-	}
-
-	this.Decode = function(freqData)
+	this.bitDecode = function(freqData)
 	{
 		// Store current frequency for detection
 		this._freqData = freqData;
 
 		// Detect correct frequency with tollerance
-		freq = this._freqData.Frequency;
+		freq = this._freqData.frequency();
 		if (this.CheckFreq(HIFreqHz, freq, this.HiFreqTolerance))
 		{ freq = HIFreqHz; }
 		else if (this.CheckFreq(LOFreqHz, freq, this.LoFreqTolerance))
@@ -115,7 +100,7 @@ function MC8BitStreamDecoder()
 			this.DecodeZero();
 
 			// Add Error freq to bit stream data also
-			this._currentBit.Freq = this._freqData.Frequency;
+			this._currentBit.Freq = this._freqData.frequency();
 			this._currentBit.FreqDetected = 0;
 			this._currentBit.AllFrequencyData.push(this._freqData);
 			return false;
@@ -153,10 +138,35 @@ function MC8BitStreamDecoder()
 		this.DecodeOne();
 		this.DecodeZero();
 
-		this._currentBit.Freq = this._freqData.Frequency;
+		this._currentBit.Freq = this._freqData.frequency();
 		this._currentBit.FreqDetected = freq;
 		this._currentBit.AllFrequencyData.push(this._freqData);
 
 		return true;
+	}
+
+	this.Start = function () {
+		// Work with half periods
+		_maxHiPeriods = LogicOneHIFreqPeriods * 2;
+		_maxLoPeriods = LogicZeroLOFreqPeriods * 2;
+
+		this.DecodedData = new Array();
+		this.Decoded = '';
+
+		this._bitNo = 0;
+		this._currentBit = new BitData(this._bitNo);
+
+		this._dataStarted = false;
+		this._freqLast = 0;
+	}
+
+	this.BitStreamDecode = function(frequencyArray)
+	{
+		this.Start();
+		
+		for (var i = 0; i < frequencyArray.length; i++)
+		{	this.bitDecode(frequencyArray[i]);	}
+
+		return this.Decoded;
 	}
 }
