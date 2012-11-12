@@ -1,3 +1,0 @@
-﻿function MC8ByteDecoder()
-{
-}
