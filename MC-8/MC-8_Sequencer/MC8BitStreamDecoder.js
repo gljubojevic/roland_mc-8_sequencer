@@ -50,6 +50,9 @@ function MC8BitStreamDecoder()
 	var _maxHiPeriods;
 	var _maxLoPeriods;
 
+	this.DecodedBytes = null;
+	this.DecodedBytesData = null;
+
 	this.CheckFreq = function(freq, val, tolerance)
 	{
 		return Math.abs(freq - val) < tolerance * freq;
@@ -145,7 +148,9 @@ function MC8BitStreamDecoder()
 		return true;
 	}
 
-	this.Start = function () {
+
+	this.BitStreamDecode = function (frequencyArray) {
+
 		// Work with half periods
 		_maxHiPeriods = LogicOneHIFreqPeriods * 2;
 		_maxLoPeriods = LogicZeroLOFreqPeriods * 2;
@@ -158,15 +163,72 @@ function MC8BitStreamDecoder()
 
 		this._dataStarted = false;
 		this._freqLast = 0;
-	}
 
-	this.BitStreamDecode = function(frequencyArray)
-	{
-		this.Start();
-		
 		for (var i = 0; i < frequencyArray.length; i++)
-		{	this.bitDecode(frequencyArray[i]);	}
+		{ this.bitDecode(frequencyArray[i]); }
 
 		return this.Decoded;
 	}
+
+
+	this.BitStreamReadByte=function(byteStart)
+	{
+		var tmp = 0;
+		var currentBit = byteStart;
+
+		for (var i = 0; i < 8; i++)
+		{
+			if ('1' == this.Decoded.charAt(currentBit++))
+			{ tmp |= (1 << i); }
+
+			if (currentBit >= this.Decoded.length - 1)
+			{ break; }
+		}
+
+		return (tmp & 0xff);
+	}
+
+
+	this.BitStreamToBytes = function()
+	{
+		// Create buffer for bytes
+		this.DecodedBytes = new Array();
+		this.DecodedBytesData = new Array();
+
+		// Skip leading "1" by finding first "0"
+		// Skip first 0 also, this means that byte start marker is "110"
+		var currentBit = this.Decoded.indexOf('0', 0);
+		currentBit++;
+
+		while (currentBit < this.Decoded.length - 1)
+		{
+			// Decode byte
+			var tmp = this.BitStreamReadByte(currentBit, true);
+
+			// Skip decoded bits
+			currentBit += 8;
+			if (currentBit >= this.Decoded.length - 1)
+			{	break;	}
+
+			// Get decoded byte to string
+			var byteString = this.Decoded.substr(currentBit - 8, 8);
+
+			// Skip stop bits
+			currentBit += 3;
+			if (currentBit >= this.Decoded.length - 1)
+			{ break; }
+
+			byteString += " s" + this.Decoded.substr(currentBit-1, 3);
+
+			// Store byte
+			this.DecodedBytes.push(tmp);
+
+			// Store byte data
+			this.DecodedBytesData.push({ bits: byteString, val:tmp });
+		}
+
+		return this.DecodedBytes;
+	}
+
+
 }
