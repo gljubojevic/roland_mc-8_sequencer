@@ -31,11 +31,8 @@ var MC8Analyzer = function ()
 
 	this.log = function ()
 	{
-		$(config.logViewId).append([].slice.call(arguments) + "\n")
-		console.log(
-			'MC8Analyzer',
-			[].slice.call(arguments)
-		);
+		$(config.logViewId).append([].slice.call(arguments) + "<br/>\n")
+		//console.log('MC8Analyzer',[].slice.call(arguments));
 	};
 
 	this.logClear = function ()
@@ -58,27 +55,6 @@ var MC8Analyzer = function ()
 	//	};
 
 
-
-	this.frequencyDisplay = function ()
-	{
-		// Display Frequencies
-		var freqTableBody = '';
-		for (var i = 0; i < _frequencyData.length; i++)
-		{
-			freqTableBody += '<tr>'
-				+ '<td>' + _frequencyData[i].rowNo + '</td>'
-				+ '<td>' + _frequencyData[i].frequency() + '</td>'
-				+ '<td>' + _frequencyData[i].firstSample() + '</td>'
-				+ '<td>' + _frequencyData[i].lastSample + '</td>'
-				+ '<td>' + _frequencyData[i].hiPeriod + '</td>'
-				+ '<td>' + _frequencyData[i].loPeriod + '</td>'
-				+ '</tr>'
-		}
-		$(config.frequencyContainerId + ' > table > tbody').empty();
-		$(config.frequencyContainerId + ' > table > tbody').append(freqTableBody);
-	};
-
-
 	/////////////////////////////
 	// Analyze
 	/////////////////////////////
@@ -98,6 +74,9 @@ var MC8Analyzer = function ()
 
 		var bytes = bitStreamDec.BitStreamToBytes();
 		this.log("Bytes:\n" + bytes.join(', '));
+		for (var i = 0; i < bitStreamDec.DecodedBytesData.length; i++) {
+			this.log(i, bitStreamDec.DecodedBytesData[i].bits, bitStreamDec.DecodedBytesData[i].val);
+		}
 	};
 
 	/////////////////////////////

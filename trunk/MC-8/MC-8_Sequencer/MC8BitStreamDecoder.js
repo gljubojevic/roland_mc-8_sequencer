@@ -218,13 +218,15 @@ function MC8BitStreamDecoder()
 			if (currentBit >= this.Decoded.length - 1)
 			{ break; }
 
-			byteString += " s" + this.Decoded.substr(currentBit-1, 3);
+			byteString += " s" + this.Decoded.substr(currentBit-3, 3);
 
 			// Store byte
 			this.DecodedBytes.push(tmp);
 
 			// Store byte data
-			this.DecodedBytesData.push({ bits: byteString, val:tmp });
+			this.DecodedBytesData.push(
+				{ bits: byteString, val:tmp }
+			);
 		}
 
 		return this.DecodedBytes;

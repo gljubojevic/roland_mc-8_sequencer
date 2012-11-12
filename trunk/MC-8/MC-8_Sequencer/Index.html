@@ -2,6 +2,18 @@
 <html>
 <head>
     <title>Roland MC-8 sequencer</title>
+	<style type="text/css">
+		table.channel
+		{
+			float:left;
+		}
+		
+		fieldset
+		{
+			float:none;
+			clear:both;
+		}
+	</style>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
 	<script src="MC8FrequencyDecoder.js" type="text/javascript"></script>
 	<script src="MC8BitStreamDecoder.js" type="text/javascript"></script>
@@ -32,8 +44,110 @@
 <body>
 <h1>Roland MC-8 Sequencer</h1>
 <fieldset>
-	<legend>Sequencer</legend>
+	<legend>Settings</legend>
+	<label for="tbxTimeBase">Timebase:</label><input type="text" id="tbxTimeBase" size="3" maxlength="3" />
+	<label for="tbxTempo">Tempo:</label><input type="text" id="tbxTempo" size="3" maxlength="3" />
+	<label for="selCV0">CV 0</label><select id="selCV0"></select>
+	<label for="selCV1">CV 1</label><select id="selCV1"></select>
+	<label for="selCV2">CV 2</label><select id="selCV2"></select>
+	<label for="selCV3">CV 3</label><select id="selCV3"></select>
+	<label for="selCV4">CV 4</label><select id="selCV4"></select>
+	<label for="selCV5">CV 5</label><select id="selCV5"></select>
+	<label for="selCV6">CV 6</label><select id="selCV6"></select>
+	<label for="selCV7">CV 7</label><select id="selCV7"></select>
+	<input type="button" id="PlayPause" value="Play/Pause" />
 </fieldset>
+<fieldset>
+	<legend>Channels</legend>
+	<table id="ch0" class="channel">
+	<caption>Channel 0</caption>
+		<thead>
+			<tr>
+				<th>CV--</th>
+				<th>Step</th>
+				<th>Gate</th>
+			</tr>
+		</thead>
+	</table>
+
+	<table id="ch1" class="channel">
+	<caption>Channel 1</caption>
+		<thead>
+			<tr>
+				<th>CV--</th>
+				<th>Step</th>
+				<th>Gate</th>
+			</tr>
+		</thead>
+	</table>
+
+	<table id="ch2" class="channel">
+	<caption>Channel 2</caption>
+		<thead>
+			<tr>
+				<th>CV--</th>
+				<th>Step</th>
+				<th>Gate</th>
+			</tr>
+		</thead>
+	</table>
+
+	<table id="ch3" class="channel">
+	<caption>Channel 3</caption>
+		<thead>
+			<tr>
+				<th>CV--</th>
+				<th>Step</th>
+				<th>Gate</th>
+			</tr>
+		</thead>
+	</table>
+
+	<table id="ch4" class="channel">
+	<caption>Channel 4</caption>
+		<thead>
+			<tr>
+				<th>CV--</th>
+				<th>Step</th>
+				<th>Gate</th>
+			</tr>
+		</thead>
+	</table>
+
+	<table id="ch5" class="channel">
+	<caption>Channel 5</caption>
+		<thead>
+			<tr>
+				<th>CV--</th>
+				<th>Step</th>
+				<th>Gate</th>
+			</tr>
+		</thead>
+	</table>
+
+	<table id="ch6" class="channel">
+	<caption>Channel 6</caption>
+		<thead>
+			<tr>
+				<th>CV--</th>
+				<th>Step</th>
+				<th>Gate</th>
+			</tr>
+		</thead>
+	</table>
+
+	<table id="ch7" class="channel">
+	<caption>Channel 7</caption>
+		<thead>
+			<tr>
+				<th>CV--</th>
+				<th>Step</th>
+				<th>Gate</th>
+			</tr>
+		</thead>
+	</table>
+</fieldset>
+
 
 <fieldset>
 	<legend>Analyzer</legend>
@@ -49,27 +163,7 @@
 		<input type="button" value="Clear log" id="btnClearLog" />
 	</div>
 	<div id="MC8ProgramDataAudio"></div>
-
-	<pre id="AnalyzeLog" style="width:50%;height:300px;float:left;overflow:scroll;"></pre>
-	<div id="freqTable" style="width:25%;height:300px;float:left;overflow:auto;">
-		<table width="100%" border="1">
-			<caption>Frequency detected</caption>
-			<thead>
-				<tr>
-					<th>Row</th>
-					<th>Frequency</th>
-					<th>Hi period</th>
-					<th>Lo period</th>
-					<th>First sample</th>
-					<th>Last sample</th>
-				</tr>
-			</thead>
-			<tbody>
-			</tbody>
-		</table>
-	</div>
-	<div id="bitstreamTable" style="width:25%;height:300px;float:left;"></div>
-	<div style="clear:both;float:none;"></div>
+	<div id="AnalyzeLog" style="width:100%;overflow:scroll;"></div>
 </fieldset>
 
 </body>
