@@ -91,10 +91,13 @@ var MC8Analyzer = function ()
 		this.log("Freq detected:" + freqDec._frequencyData.length);
 
 		bitStreamDec = new MC8BitStreamDecoder();
-		bitStreamDec.LoFreqTolerance = config.loFreqTolerance;
-		bitStreamDec.HiFreqTolerance = config.hiFreqTolerance;
+		bitStreamDec.LoFreqTolerance = config.loFreqTolerance / 100.0;
+		bitStreamDec.HiFreqTolerance = config.hiFreqTolerance / 100.0;
 		bitStream = bitStreamDec.BitStreamDecode(freqDec._frequencyData);
 		this.log("BitStream:\n" + bitStream);
+
+		var bytes = bitStreamDec.BitStreamToBytes();
+		this.log("Bytes:\n" + bytes.join(', '));
 	};
 
 	/////////////////////////////
@@ -213,11 +216,11 @@ var MC8Analyzer = function ()
 
 		loFreq.change(function ()
 		{
-			config.loFreqTolerance = $(this).val();
+			config.loFreqTolerance = parseInt($(this).val());
 		});
 		hiFreq.change(function ()
 		{
-			config.hiFreqTolerance = $(this).val();
+			config.hiFreqTolerance = parseInt($(this).val());
 		});
 	};
 
