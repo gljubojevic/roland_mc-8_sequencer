@@ -1,31 +1,39 @@
-﻿function MC8SequencerChannel()
+﻿function MC8SequencerNote()
+{
+	this.CV0 = 0;
+	this.CV1 = 0;
+	this.CV2 = 0;
+	this.CV3 = 0;
+	this.CV4 = 0;
+	this.CV5 = 0;
+	this.CV6 = 0;
+	this.CV7 = 0;
+	this.Gate = 0;
+	this.StepTime = 0;
+}
+
+function MC8SequencerChannel()
 {
 	// This is bit field, each CV is one bit in assigment
 	this.CVAssinged = 0;
+	this.Notes = new Array();
 
-	this.CV0 = null;
-	this.CV1 = null;
-	this.CV2 = null;
-	this.CV3 = null;
-	this.CV4 = null;
-	this.CV5 = null;
-	this.CV6 = null;
-	this.CV7 = null;
-	this.StepTime = new Array();
-	this.Gate = new Array;
+	this.NoteCurrent = 0;
+	this.NoteCurrentStep = 0;
 
-	this.CheckCVAssigned = function (cv)
-	{
+	this.CVCheckAssigned = function (cv) {
 		return 0 != (this.CVAssinged & (1 << cv));
 	}
 
-	this.AssignCV = function (cv)
-	{
-		// If not assigned create empty array
-		if (!this.CVAssinged(cv))
-		{
-
-		}
+	this.CVAdd = function (cv) {
 		this.CVAssinged |= (1 << cv);
+	}
+
+	this.CVRem = function (cv) {
+		this.CVAssinged |= (1 << cv);
+	}
+
+	this.NoteAdd()
+	{
 	}
 }

@@ -23,21 +23,12 @@
 		// Start/Init
 		$(document).ready(function ()
 		{
-			// Init Analyzer
-			MC8Analyzer.config.logViewId = '#AnalyzeLog';
-			MC8Analyzer.config.inputFileId = '#FileLoadMC8Data';
-			MC8Analyzer.config.btnPlayWaveId = '#btnAnalyzerPlayWave';
-			MC8Analyzer.config.btnAnalyzeId = '#btnAnalyze';
-			MC8Analyzer.config.btnClearLogId = '#btnClearLog';
-			MC8Analyzer.config.audioContainerId = '#MC8ProgramDataAudio';
-			MC8Analyzer.config.selLoFreqToleranceId = '#loFreqTolerance';
-			MC8Analyzer.config.selHiFreqToleranceId = '#hiFreqTolerance';
-			MC8Analyzer.config.frequencyContainerId = '#freqTable';
-			MC8Analyzer.config.bitstreamContainerId = '#bitstreamTable';
-			MC8Analyzer.initAnalyzer();
-
 			// Init sequencer
 			MC8Sequencer.initSequencer();
+
+			// Init Analyzer
+			MC8Analyzer.initAnalyzer();
+
 		});
 	</script>
 </head>
@@ -45,6 +36,7 @@
 <h1>Roland MC-8 Sequencer</h1>
 <fieldset>
 	<legend>Settings</legend>
+	<input type="button" id="btnLoadFromAnalyzer" value="Load from analyzer" />
 	<label for="tbxTimeBase">Timebase:</label><input type="text" id="tbxTimeBase" size="3" maxlength="3" />
 	<label for="tbxTempo">Tempo:</label><input type="text" id="tbxTempo" size="3" maxlength="3" />
 	<label for="selCV0">CV 0</label><select id="selCV0"></select>
