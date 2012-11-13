@@ -7,9 +7,10 @@ var MC8Sequencer = function ()
 	var config = {
 		btnLoadFromAnalyzerId: '#btnLoadFromAnalyzer'
 	};
-	
+
 	var _sequencer = this;
 
+	var _channels;
 
 	/////////////////////////////
 	// Load sequencer memory
@@ -21,20 +22,21 @@ var MC8Sequencer = function ()
 
 	var _MC8Memory;
 
-	this.resetMC8Memory = function()
+	this.resetMC8Memory = function ()
 	{
 		// Init MC-8 memory
 		_MC8Memory = new Array(MC8MemorySize);
-		for (var i = 0; i < _MC8Memory.length; i++) {
+		for (var i = 0; i < _MC8Memory.length; i++)
+		{
 			_MC8Memory[i] = 0;
 		}
 	}
 
 	// load bytes in memory
-	this.loadMC8Memory = function(dataBytes)
+	this.loadMC8Memory = function (dataBytes)
 	{
 		this.resetMC8Memory();
-			
+
 		var checksum;
 		var memAddress;
 		var blockSize;
@@ -57,16 +59,16 @@ var MC8Sequencer = function ()
 			// Check Checksum
 			checksum = ((checksum ^ 0xff & 0xff) + 1) & 0xff;
 			if (checksum != dataBytes[pos++])
-			{	throw "Invalid checksum found at byte:" + (pos - 1);	}
+			{ throw "Invalid checksum found at byte:" + (pos - 1); }
 
 			// Check end od block
 			if (MC8EOB != dataBytes[pos++])
-			{	throw "Missing end of block marker at byte:" + (pos - 1);	}
+			{ throw "Missing end of block marker at byte:" + (pos - 1); }
 		}
 	}
 
 	// Data is byte array
-	this.loadSequence = function(data)
+	this.loadSequence = function (data)
 	{
 		this.loadMC8Memory(data);
 		// TODO: Create channels
@@ -80,9 +82,19 @@ var MC8Sequencer = function ()
 	/////////////////////////////
 
 	// Init and attach
-	this.initSequencer = function () {
+	this.initSequencer = function ()
+	{
+		_channels = new Array();
+		for (var i = 0; i < 8; i++)
+		{
+			_channels.push(
+				new MC8SequencerChannel(i).Init()
+			);
+		}
+
 		// btn load from analyzer
-		$(config.btnLoadFromAnalyzerId).click(function () {
+		$(config.btnLoadFromAnalyzerId).click(function ()
+		{
 			_sequencer.loadSequence(MC8Analyzer.SequencerBytes);
 		});
 	};
