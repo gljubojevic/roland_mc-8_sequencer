@@ -5,12 +5,33 @@ var MC8Sequencer = function ()
 {
 	// Config
 	var config = {
+		selCVPrefixId:'#selCV',
 		btnLoadFromAnalyzerId: '#btnLoadFromAnalyzer'
 	};
 
 	var _sequencer = this;
 
 	var _channels;
+
+	/////////////////////////////
+	// Channel assigment
+	/////////////////////////////
+	this.CVAssign = function(cv, ch) {
+		// Check if allready assigned to same channel
+		if (-1 != ch && _channels[ch].CVCheckAssigned(cv)) {
+			return;
+		}
+
+		// Remove CV from existing channel			
+		for (var i = 0; i < _channels.length; i++) {
+			_channels[i].CVRem(cv);
+		}
+
+		// Add to new channel
+		if (-1 != ch) {
+			_channels[ch].CVAdd(cv);
+		}
+	}
 
 	/////////////////////////////
 	// Load sequencer memory
@@ -84,17 +105,32 @@ var MC8Sequencer = function ()
 	// Init and attach
 	this.initSequencer = function ()
 	{
+		// Create empty channels
 		_channels = new Array();
-		for (var i = 0; i < 8; i++)
-		{
-			_channels.push(
-				new MC8SequencerChannel(i).Init()
-			);
+		for (var i = 0; i < 8; i++) {
+			var chn = new MC8SequencerChannel(i);
+			chn.Init();
+			_channels.push(chn);
+		}
+
+		// Initi channel assigment
+		for (var i = 0; i < 8; i++) {
+			var ops = '<option value="-1">CH--</option>';
+			for (var j = 0; j < 8; j++) {
+				ops += '<option value="' + j + '">CH' + j + '</option>';
+			}
+			var sel = $(config.selCVPrefixId + i);
+			sel.append(ops);
+
+			sel.change(function(){
+				var ch = parseInt($(this).val());
+				var cv = parseInt($(this).attr('id').replace(config.selCVPrefixId.replace('#',''),''));
+				_sequencer.CVAssign(cv,ch);
+			});
 		}
 
 		// btn load from analyzer
-		$(config.btnLoadFromAnalyzerId).click(function ()
-		{
+		$(config.btnLoadFromAnalyzerId).click(function(){
 			_sequencer.loadSequence(MC8Analyzer.SequencerBytes);
 		});
 	};

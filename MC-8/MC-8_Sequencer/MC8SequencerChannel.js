@@ -35,11 +35,17 @@ function MC8SequencerChannel(channelNo)
 	}
 
 	this.CVAdd = function (cv) {
-		this.CVAssinged |= (1 << cv);
+		if (!this.CVCheckAssigned(cv)) {
+			this.CVAssinged |= (1 << cv);
+			this.buildChannelDisplay();
+		}
 	}
 
 	this.CVRem = function (cv) {
-		this.CVAssinged |= (1 << cv);
+		if (this.CVCheckAssigned(cv)) {
+			this.CVAssinged ^= (1 << cv);
+			this.buildChannelDisplay();
+		}
 	}
 
 	this.CVGetArray = function ()
@@ -101,12 +107,24 @@ function MC8SequencerChannel(channelNo)
 		return html;
 	}
 
+
+	this.buildChannelDisplay = function()
+	{
+		var html = this.createTemplate();
+		var container = $(this.config.containerId);
+		if ($('#ch' + this.ChannelNo, container).length > 0) {
+			$('#ch' + this.ChannelNo, container).replaceWith(html);
+		}
+		else {
+			container.append(html);
+		}
+
+		// TODO Atach events
+	}
+
 	// Create html
 	this.Init = function ()
 	{
-		var html = this.createTemplate();
-
-		$(this.config.containerId).append(html);
-		// TODO Atach events
+		this.buildChannelDisplay();
 	}
 }
