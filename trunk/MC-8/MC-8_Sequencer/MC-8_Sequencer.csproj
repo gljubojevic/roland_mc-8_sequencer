@@ -53,6 +53,7 @@
   <ItemGroup>
     <Content Include="Global.asax" />
     <Content Include="Index.html" />
+    <Content Include="MC-8_Styles.css" />
     <Content Include="MC8Analyzer.js" />
     <Content Include="MC8BitStreamDecoder.js" />
     <Content Include="MC8FrequencyDecoder.js" />

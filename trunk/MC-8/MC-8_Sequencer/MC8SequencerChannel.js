@@ -85,19 +85,19 @@ function MC8SequencerChannel(channelNo)
 		{ html += '<th>' + CVs.join('</th><th>') + '</th>'; }
 		html += '<th>Step</th><th>Gate</th></tr></thead>';
 
-		html += '<tbody id="CH' + this.ChannelNo + 'NotesBeforeEdit">';
+		html += '<tbody class="NotesBeforeEdit">';
 		for (var i = 0; i < this.config.rowsBeforeEdit; i++)
 		{ html += noteRow; }
 		html += '</tbody>';
 
-		html += '<tbody><tr>';
+		html += '<tbody class="NotesEdit"><tr>';
 		for (var i = 0; i < CVs.length; i++)
 		{ html += '<td><input id="CH' + this.ChannelNo + CVs[i] + '" type="text" size="3" maxlength="3" /></td>'; }
 		html += '<td><input id="CH' + this.ChannelNo + 'Step" type="text" size="3" maxlength="3" /></td>';
 		html += '<td><input id="CH' + this.ChannelNo + 'Gate" type="text" size="3" maxlength="3" /></td>';
 		html += '</tr></tbody>';
 
-		html += '<tbody id="CH' + this.ChannelNo + 'NotesAfterEdit">';
+		html += '<tbody class="NotesAfterEdit">';
 		for (var i = 0; i < this.config.rowsBeforeEdit; i++)
 		{ html += noteRow; }
 		html += '</tbody>';
