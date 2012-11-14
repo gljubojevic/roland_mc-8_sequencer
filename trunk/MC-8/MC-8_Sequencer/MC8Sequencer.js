@@ -5,7 +5,7 @@ var MC8Sequencer = function ()
 {
 	// Config
 	var config = {
-		selCVPrefixId:'#selCV',
+		selCVPrefixId: '#selCV',
 		btnLoadFromAnalyzerId: '#btnLoadFromAnalyzer'
 	};
 
@@ -16,19 +16,23 @@ var MC8Sequencer = function ()
 	/////////////////////////////
 	// Channel assigment
 	/////////////////////////////
-	this.CVAssign = function(cv, ch) {
+	this.CVAssign = function (cv, ch)
+	{
 		// Check if allready assigned to same channel
-		if (-1 != ch && _channels[ch].CVCheckAssigned(cv)) {
+		if (-1 != ch && _channels[ch].CVCheckAssigned(cv))
+		{
 			return;
 		}
 
 		// Remove CV from existing channel			
-		for (var i = 0; i < _channels.length; i++) {
+		for (var i = 0; i < _channels.length; i++)
+		{
 			_channels[i].CVRem(cv);
 		}
 
 		// Add to new channel
-		if (-1 != ch) {
+		if (-1 != ch)
+		{
 			_channels[ch].CVAdd(cv);
 		}
 	}
@@ -38,8 +42,15 @@ var MC8Sequencer = function ()
 	/////////////////////////////
 
 	var MC8MemoryStart = 0x4000;
+	var MC8MemoryMask = MC8MemoryStart - 1;
 	var MC8MemorySize = 0x4000;
 	var MC8EOB = 0xff;
+	var MC8SongConfig = 0x400c; // Song definition starts at this address
+
+	var MC8CVCheckMask = 0xc0;
+	var MC8StepMask = 0xc0;
+	var MC8GateMask = 0xe0;
+	var MC8CVCHMask = 0x07;
 
 	var _MC8Memory;
 
@@ -69,7 +80,7 @@ var MC8Sequencer = function ()
 
 			checksum += dataBytes[pos];
 			checksum += dataBytes[pos + 1];
-			memAddress = ((dataBytes[pos++] << 8) | dataBytes[pos++]) & (MC8MemoryStart - 1);
+			memAddress = ((dataBytes[pos++] << 8) | dataBytes[pos++]) & MC8MemoryMask;
 
 			for (var i = 0; i < blockSize; i++)
 			{
@@ -88,10 +99,49 @@ var MC8Sequencer = function ()
 		}
 	}
 
+	this.loadChannelData = function ()
+	{
+		// Get song config address in array
+		var pos = MC8SongConfig & MC8MemoryMask;
+
+		// Read song until end of song reached
+		while (MC8EOB != _MC8Memory[pos])
+		{
+			// Get type what we load
+			var dataType = _MC8Memory[pos++];
+			// Extract channel
+			var ch = dataType & MC8CVCHMask;
+
+			// From where to load
+			var dataFrom = (_MC8Memory[pos++] | (_MC8Memory[pos++] << 8)) & MC8MemoryMask;
+			var dataTo = (_MC8Memory[pos + 1] | (_MC8Memory[pos + 2] << 8)) & MC8MemoryMask;
+
+			if (0 == (dataType & MC8CVCheckMask))
+			{
+				// this is CV
+				var cv = (dataType >> 3) & MC8CVCHMask;
+				_channels[ch].CVAdd(cv);
+				_channels[ch].loadCV(cv, dataFrom, dataTo, _MC8Memory);
+			}
+			else if (MC8StepMask == (dataType & MC8StepMask))
+			{
+				// this is Step
+				_channels[ch].loadStep(dataFrom, dataTo, _MC8Memory);
+			}
+			else if (MC8GateMask == (dataType & MC8GateMask))
+			{
+				// this is Gate
+				_channels[ch].loadGate(dataFrom, dataTo, _MC8Memory);
+			}
+		}
+	}
+
 	// Data is byte array
 	this.loadSequence = function (data)
 	{
+		// TODO: Reset current channels
 		this.loadMC8Memory(data);
+		this.loadChannelData();
 		// TODO: Create channels
 		// TODO: Load channel data
 		// TODO: Display channel data
@@ -107,30 +157,35 @@ var MC8Sequencer = function ()
 	{
 		// Create empty channels
 		_channels = new Array();
-		for (var i = 0; i < 8; i++) {
+		for (var i = 0; i < 8; i++)
+		{
 			var chn = new MC8SequencerChannel(i);
 			chn.Init();
 			_channels.push(chn);
 		}
 
 		// Initi channel assigment
-		for (var i = 0; i < 8; i++) {
+		for (var i = 0; i < 8; i++)
+		{
 			var ops = '<option value="-1">CH--</option>';
-			for (var j = 0; j < 8; j++) {
+			for (var j = 0; j < 8; j++)
+			{
 				ops += '<option value="' + j + '">CH' + j + '</option>';
 			}
 			var sel = $(config.selCVPrefixId + i);
 			sel.append(ops);
 
-			sel.change(function(){
+			sel.change(function ()
+			{
 				var ch = parseInt($(this).val());
-				var cv = parseInt($(this).attr('id').replace(config.selCVPrefixId.replace('#',''),''));
-				_sequencer.CVAssign(cv,ch);
+				var cv = parseInt($(this).attr('id').replace(config.selCVPrefixId.replace('#', ''), ''));
+				_sequencer.CVAssign(cv, ch);
 			});
 		}
 
 		// btn load from analyzer
-		$(config.btnLoadFromAnalyzerId).click(function(){
+		$(config.btnLoadFromAnalyzerId).click(function ()
+		{
 			_sequencer.loadSequence(MC8Analyzer.SequencerBytes);
 		});
 	};

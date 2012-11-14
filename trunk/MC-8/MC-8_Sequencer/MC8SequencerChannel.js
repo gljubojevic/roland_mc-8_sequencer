@@ -61,6 +61,21 @@ function MC8SequencerChannel(channelNo)
 		return CVs;
 	}
 
+	this.loadCV = function (cv, from, to, data)
+	{
+		
+	}
+
+	this.loadGate = function (from, to, data)
+	{
+
+	}
+
+	this.loadStep = function (from, to, data)
+	{
+
+	}
+
 	this.NoteAdd = function()
 	{
 	}
