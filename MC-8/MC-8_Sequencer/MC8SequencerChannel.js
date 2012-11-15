@@ -126,6 +126,33 @@ function MC8SequencerChannel(channelNo)
 	// Playback
 	/////////////////////////////
 
+	this.sequencerRun = function () {
+		if (0 == this.Notes.length || this.NoteCurrent >= this.Notes.length) {
+			return;
+		}
+
+		if (this.NoteCurrentStep >= this.Notes[this.NoteCurrent].StepTime) {
+			this.NoteCurrentStep = 0;
+			this.NoteCurrent++;
+		}
+
+		if (this.NoteCurrent >= this.Notes.length) {
+			return;
+		}
+
+		if (0 == this.NoteCurrentStep) {
+			// TODO: Playback note
+			this.displayNotes();
+		}
+
+		this.NoteCurrentStep++;
+	}
+
+	this.sequencerStop = function () {
+		this.NoteCurrent = 0;
+		this.NoteCurrentStep = 0;
+		this.displayNotes();
+	}
 
 	/////////////////////////////
 	// Display

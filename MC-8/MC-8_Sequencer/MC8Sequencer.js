@@ -1,64 +1,115 @@
 ﻿/// <reference path="MC8Analyzer.js" />
 /// <reference path="MC8SequencerChannel.js" />
 
-var MC8Sequencer = function ()
-{
+var MC8Sequencer = function () {
 	// Config
 	var config = {
 		selCVPrefixId: '#selCV',
 		tbxTempoId: '#tbxTempo',
 		tbxTimeBaseId: '#tbxTimeBase',
+		tbxCurrentStepId: '#tbxCurrentStep',
 		btnPlayPauseId: '#btnPlayPause',
-		btnStopId:'#btnStop',
+		btnStopId: '#btnStop',
 		btnLoadFromAnalyzerId: '#btnLoadFromAnalyzer'
 	};
 
 	var _sequencer = this;
 
-	var _channels;	// All chennels
-	var _tempo;		// Current tempo
-	var _timeBase;	// Current timebase
+	var _channels; 		// All chennels
+	var _tempo; 			// Current tempo
+	var _timeBase; 			// Current timebase
+	var _playingTimer = null; // Indication sequencer playing or not
+	var _currentStep = 0;
 
 	// UI ref
 	var _selCV = null;
 	var _tbxTempo = null;
 	var _tbxTimeBase = null;
+	var _tbxCurrentStep = null;
 
 	/////////////////////////////
 	// Playback
 	/////////////////////////////
 
-	this.playPauseSequencer = function() {
-		alert("Not implemeted");
+	this.sequencerStep = function () {
+		// Run sequencer on all channels
+		for (var i = 0; i < _channels.length; i++) {
+			_channels[i].sequencerRun();
+		}
+
+		_currentStep++;
+		_tbxCurrentStep.val(_currentStep);
+		this.sequencerSetTimer();
+	}
+
+	this.sequencerSetTimer = function () {
+		// Calculate timeout
+		var timeOut = (60 * 1000) / _tempo / _tbxTimeBase;
+
+		// Start Timer
+		_playingTimer = setTimeout(
+			function () {
+				_sequencer.sequencerStep();
+			}, timeOut
+		);
+	}
+
+	this.sequencerClearTimer = function () {
+		if (null != _playingTimer) {
+			clearTimeout(_playingTimer);
+			_playingTimer = null;
+			return true;
+		}
+
+		return false;
+	}
+
+
+	this.playPauseSequencer = function () {
+		// Pause
+		if (this.sequencerClearTimer()) {
+			return;
+		}
+
+		// Play
+		this.sequencerSetTimer();
 	}
 
 	this.stopSequencer = function () {
-		alert("Not implemeted");
+		// Remove timer
+		this.sequencerClearTimer();
+
+		// Reset current step
+		_currentStep = 0;
+		_tbxCurrentStep.val(_currentStep);
+
+		// Reset all channels
+		for (var i = 0; i < _channels.length; i++) {
+			_channels[i].sequencerStop();
+		}
 	}
 
 
 	/////////////////////////////
 	// Channel assigment
 	/////////////////////////////
-	this.CVAssign = function (cv, ch)
-	{
+	this.CVAssign = function (cv, ch) {
 		// Check if allready assigned to same channel
 		if (-1 != ch && _channels[ch].CVCheckAssigned(cv))
-		{	return;	}
+		{ return; }
 
 		// Remove CV from existing channel			
 		for (var i = 0; i < _channels.length; i++)
-		{	_channels[i].CVRem(cv);	}
+		{ _channels[i].CVRem(cv); }
 
 		// Add to new channel
 		if (-1 != ch)
-		{	_channels[ch].CVAdd(cv);	}
+		{ _channels[ch].CVAdd(cv); }
 	}
 
-	this.CVShowAssigment = function(cv, ch)
-	{
+	this.CVShowAssigment = function (cv, ch) {
 		$('option:selected', _selCV[cv]).attr('selected', false);
-		$('option[value=' + ch +']', _selCV[cv]).attr('selected', true);
+		$('option[value=' + ch + ']', _selCV[cv]).attr('selected', true);
 	}
 
 	/////////////////////////////
@@ -71,34 +122,30 @@ var MC8Sequencer = function ()
 	var MC8EOB = 0xff;
 	var MC8SongConfig = 0x400c; // Song definition starts at this address
 
-	var MC8CVCheckMask = 0xc0;	// When two high bits are 0 than this is CV data
+	var MC8CVCheckMask = 0xc0; // When two high bits are 0 than this is CV data
 	var MC8CVCHMask = 0x07; 	// Channel/CV mask, channel is always 3 lower bits, CV is bits 3-5
 	var MC8StepMask = 0xc0; 	// Mask for determining step two high bits are one -> %11000000
-	var MC8GateMask = 0xe0;		// Mash for determining gate three high bits are one -> %11100000
+	var MC8GateMask = 0xe0; 	// Mash for determining gate three high bits are one -> %11100000
 
 	var _MC8Memory;
 
-	this.resetMC8Memory = function ()
-	{
+	this.resetMC8Memory = function () {
 		// Init MC-8 memory
 		_MC8Memory = new Array(MC8MemorySize);
-		for (var i = 0; i < _MC8Memory.length; i++)
-		{
+		for (var i = 0; i < _MC8Memory.length; i++) {
 			_MC8Memory[i] = 0;
 		}
 	}
 
 	// load bytes in memory
-	this.loadMC8Memory = function (dataBytes)
-	{
+	this.loadMC8Memory = function (dataBytes) {
 		this.resetMC8Memory();
 
 		var checksum;
 		var memAddress;
 		var blockSize;
 		var pos = 0;
-		while (0 < dataBytes[pos])
-		{
+		while (0 < dataBytes[pos]) {
 			checksum = dataBytes[pos];
 			blockSize = dataBytes[pos++];
 
@@ -106,8 +153,7 @@ var MC8Sequencer = function ()
 			checksum += dataBytes[pos + 1];
 			memAddress = ((dataBytes[pos++] << 8) | dataBytes[pos++]) & MC8MemoryMask;
 
-			for (var i = 0; i < blockSize; i++)
-			{
+			for (var i = 0; i < blockSize; i++) {
 				checksum += dataBytes[pos];
 				_MC8Memory[memAddress++] = dataBytes[pos++];
 			}
@@ -124,22 +170,21 @@ var MC8Sequencer = function ()
 	}
 
 
-	this.loadSequenceData = function ()
-	{
+	this.loadSequenceData = function () {
 		// Get song config address in array
 		var pos = MC8SongConfig & MC8MemoryMask;
 
-		pos++;	// Skip unknown byte
-		pos++;	// Skip unknown byte
+		pos++; // Skip unknown byte
+		pos++; // Skip unknown byte
 
-		_tempo = (_MC8Memory[pos++] & 0x7f) * 2;	// Get Tempo
-		_timeBase = _MC8Memory[pos++];				// Get Time base
+		_tempo = (_MC8Memory[pos++] & 0x7f) * 2; // Get Tempo
+		_timeBase = _MC8Memory[pos++]; 			// Get Time base
+		_currentStep = 0;
 
 		// Read song until end of song reached
-		while (MC8EOB != _MC8Memory[pos])
-		{
-			var dataType = _MC8Memory[pos++];		// Get what we load
-			var ch = dataType & MC8CVCHMask;		// Extract channel
+		while (MC8EOB != _MC8Memory[pos]) {
+			var dataType = _MC8Memory[pos++]; 	// Get what we load
+			var ch = dataType & MC8CVCHMask; 	// Extract channel
 
 			// From where to load
 			var dataFrom = (_MC8Memory[pos++] | (_MC8Memory[pos++] << 8)) & MC8MemoryMask;
@@ -167,8 +212,7 @@ var MC8Sequencer = function ()
 	}
 
 	// Data is byte array
-	this.loadSequence = function (data)
-	{
+	this.loadSequence = function (data) {
 		// TODO: Reset current channels
 		this.loadMC8Memory(data);
 		this.loadSequenceData();
@@ -176,6 +220,7 @@ var MC8Sequencer = function ()
 		// Display sequence data
 		_tbxTempo.val(_tempo);
 		_tbxTimeBase.val(_timeBase);
+		_tbxCurrentStep.val(_currentStep);
 
 		// Display channel data
 		for (var i = 0; i < _channels.length; i++) {
@@ -189,12 +234,10 @@ var MC8Sequencer = function ()
 	/////////////////////////////
 
 	// Init and attach
-	this.initSequencer = function ()
-	{
+	this.initSequencer = function () {
 		// Create empty channels
 		_channels = new Array();
-		for (var i = 0; i < 8; i++)
-		{
+		for (var i = 0; i < 8; i++) {
 			var chn = new MC8SequencerChannel(i);
 			chn.Init();
 			_channels.push(chn);
@@ -203,8 +246,7 @@ var MC8Sequencer = function ()
 		// Init channel assigment
 		_selCV = new Array();
 
-		for (var i = 0; i < 8; i++)
-		{
+		for (var i = 0; i < 8; i++) {
 			var ops = '<option value="-1">CH--</option>';
 			for (var j = 0; j < 8; j++) {
 				ops += '<option value="' + j + '">CH' + j + '</option>';
@@ -213,7 +255,7 @@ var MC8Sequencer = function ()
 			var sel = $(config.selCVPrefixId + i);
 			sel.append(ops);
 
-			sel.change(function (){
+			sel.change(function () {
 				var ch = parseInt($(this).val());
 				var cv = parseInt($(this).attr('id').replace(config.selCVPrefixId.replace('#', ''), ''));
 				_sequencer.CVAssign(cv, ch);
@@ -226,6 +268,7 @@ var MC8Sequencer = function ()
 		// Init text boxes
 		_tbxTempo = $(config.tbxTempoId);
 		_tbxTimeBase = $(config.tbxTimeBaseId);
+		_tbxCurrentStep = $(config.tbxCurrentStepId);
 
 		// btn load from analyzer
 		$(config.btnLoadFromAnalyzerId).click(function () {
@@ -233,7 +276,7 @@ var MC8Sequencer = function ()
 		});
 
 		// btn Play/Pause
-		$(config.btnPlayPauseId).click(function(){
+		$(config.btnPlayPauseId).click(function () {
 			_sequencer.playPauseSequencer();
 		});
 
