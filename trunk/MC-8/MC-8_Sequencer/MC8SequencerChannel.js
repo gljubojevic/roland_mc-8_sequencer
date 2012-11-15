@@ -17,15 +17,15 @@ function MC8SequencerChannel(channelNo)
 	// Set channel no on construction
 	this.ChannelNo = channelNo;
 
+	// Playback control
+	this.NoteCurrent = 0;
+	this.NoteCurrentStep = 0;
+
 	// This is bit field, each CV is one bit in assigment
 	this.CVAssinged = 0;
 
 	// Notes Array
 	this.Notes = new Array();
-
-	// Playback control
-	this.NoteCurrent = 0;
-	this.NoteCurrentStep = 0;
 
 	// Config for channel
 	this.config = {
@@ -121,6 +121,11 @@ function MC8SequencerChannel(channelNo)
 		var note = new MC8SequencerNote();
 		this.Notes.push(note);
 	}
+
+	/////////////////////////////
+	// Playback
+	/////////////////////////////
+
 
 	/////////////////////////////
 	// Display
@@ -262,6 +267,8 @@ function MC8SequencerChannel(channelNo)
 			else {
 				this.displayEmptyRow(_tableRowsBeforeEdit[i]);
 			}
+
+			noteIdx++;
 		}
 	}
 
