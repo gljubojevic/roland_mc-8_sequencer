@@ -19,6 +19,12 @@ table.channel caption
 	padding:4px;
 	margin:4px 0px 2px 0px;
 }
+
+table.channel input
+{
+	width:35px;
+	font:normal normal bold 12px Arial;
+}
 		
 table.channel td,
 table.channel th
