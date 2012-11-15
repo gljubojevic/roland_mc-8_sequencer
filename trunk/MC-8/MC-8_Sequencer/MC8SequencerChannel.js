@@ -19,16 +19,31 @@ function MC8SequencerChannel(channelNo)
 
 	// This is bit field, each CV is one bit in assigment
 	this.CVAssinged = 0;
+
+	// Notes Array
 	this.Notes = new Array();
 
+	// Playback control
 	this.NoteCurrent = 0;
 	this.NoteCurrentStep = 0;
 
+	// Config for channel
 	this.config = {
 		containerId: '#seqChannels',
 		rowsBeforeEdit:5,
 		rowsAfterEdit:5
 	}
+
+	// variables
+	var _container = null;
+	var _channelDisplay = null;
+	var _tbxStepTime = null;
+	var _tbxGate = null;
+	var _tbxCVs = null;
+
+	/////////////////////////////
+	// CV management
+	/////////////////////////////
 
 	this.CVCheckAssigned = function (cv) {
 		return 0 != (this.CVAssinged & (1 << cv));
@@ -61,31 +76,56 @@ function MC8SequencerChannel(channelNo)
 		return CVs;
 	}
 
-	this.loadCV = function (cv, from, to, data)
+	/////////////////////////////
+	// Data loading
+	/////////////////////////////
+
+	this.loadCV = function (cv, from, count, data)
 	{
-		
+		var cvAdr = "CV" + cv;
+
+		for (var i = 0; i < count; i++) {
+
+			// Only add notes when filing CV
+			if (this.Notes.length < i+1) {
+				this.NoteAdd();
+			}
+
+			// Set object property as associative array
+			this.Notes[i][cvAdr] = data[from++];
+		}
 	}
 
-	this.loadGate = function (from, to, data)
+	this.loadGate = function (from, count, data)
 	{
-
+		for (var i = 0; i < count; i++) {
+			this.Notes[i].Gate = data[from++];
+		}
 	}
 
-	this.loadStep = function (from, to, data)
+	this.loadStep = function (from, count, data)
 	{
-
+		for (var i = 0; i < count; i++) {
+			this.Notes[i].StepTime = data[from++];
+		}
 	}
+
+	/////////////////////////////
+	// Note managemnet
+	/////////////////////////////
 
 	this.NoteAdd = function()
 	{
+		var note = new MC8SequencerNote();
+		this.Notes.push(note);
 	}
 
+	/////////////////////////////
+	// Display
+	/////////////////////////////
 
-	this.createTemplate = function ()
+	this.createTemplate = function (CVs)
 	{
-		// Get Assigned CVS
-		var CVs = this.CVGetArray();
-
 		// Get Row for single note
 		var noteRow = '<tr>';
 		for (var i = 0; i < CVs.length; i++)
@@ -125,17 +165,56 @@ function MC8SequencerChannel(channelNo)
 
 	this.buildChannelDisplay = function()
 	{
-		var html = this.createTemplate();
-		var container = $(this.config.containerId);
-		if ($('#ch' + this.ChannelNo, container).length > 0) {
-			$('#ch' + this.ChannelNo, container).replaceWith(html);
+		// Get Assigned CVS
+		var CVs = this.CVGetArray();
+		
+		// Create html template
+		var html = this.createTemplate(CVs);
+		_container = $(this.config.containerId);
+		if ($('#ch' + this.ChannelNo, _container).length > 0) {
+			$('#ch' + this.ChannelNo, _container).replaceWith(html);
 		}
 		else {
-			container.append(html);
+			_container.append(html);
 		}
+
+		// Get ref to channel display
+		_channelDisplay = $('#ch' + this.ChannelNo, _container);
+
+		// Text boxes, associative array for easier access later
+		_tbxCVs = new Array();
+		for (var i = 0; i < CVs.length; i++) {
+			var tbxCV = $('#CH' + this.ChannelNo + CVs[i], _channelDisplay);
+			_tbxCVs[CVs[i]] = tbxCV;
+		}
+		_tbxGate = $('#CH' + this.ChannelNo + 'Gate', _channelDisplay);
+		_tbxStepTime = $('#CH' + this.ChannelNo + 'Step', _channelDisplay);
 
 		// TODO Atach events
 	}
+
+
+	this.displayNotes = function() {
+		
+		// Exit if no notes
+		if (0 == this.Notes.length) {
+			return;
+		}
+
+		// Get Assigned CVS
+		var CVs = this.CVGetArray();
+
+		// Display Current note
+		for (var i = 0; i < CVs.length; i++) {
+			_tbxCVs[CVs[i]].val(this.Notes[this.NoteCurrent][CVs[i]]);
+		}
+		_tbxGate.val(this.Notes[this.NoteCurrent].Gate);
+		_tbxStepTime.val(this.Notes[this.NoteCurrent].StepTime);
+	}
+
+	/////////////////////////////
+	// Init
+	/////////////////////////////
 
 	// Create html
 	this.Init = function ()
