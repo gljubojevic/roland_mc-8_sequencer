@@ -165,17 +165,19 @@ function MC8SequencerChannel(channelNo)
 
 	this.buildChannelDisplay = function()
 	{
+		// Get Container ref
+		_container = $(this.config.containerId);
+
 		// Get Assigned CVS
 		var CVs = this.CVGetArray();
-		
 		// Create html template
 		var html = this.createTemplate(CVs);
-		_container = $(this.config.containerId);
-		if ($('#ch' + this.ChannelNo, _container).length > 0) {
-			$('#ch' + this.ChannelNo, _container).replaceWith(html);
+
+		if (0 == $('#ch' + this.ChannelNo, _container).length) {
+			_container.append(html);
 		}
 		else {
-			_container.append(html);
+			$('#ch' + this.ChannelNo, _container).replaceWith(html);
 		}
 
 		// Get ref to channel display
