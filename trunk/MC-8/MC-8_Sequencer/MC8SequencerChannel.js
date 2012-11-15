@@ -40,6 +40,8 @@ function MC8SequencerChannel(channelNo)
 	var _tbxStepTime = null;
 	var _tbxGate = null;
 	var _tbxCVs = null;
+	var _tableRowsAfterEdit = null;
+	var _tableRowsBeforeEdit = null;
 
 	/////////////////////////////
 	// CV management
@@ -183,6 +185,11 @@ function MC8SequencerChannel(channelNo)
 		// Get ref to channel display
 		_channelDisplay = $('#ch' + this.ChannelNo, _container);
 
+		// Get rows before edit
+		_tableRowsBeforeEdit = $('tbody.NotesBeforeEdit > tr', _channelDisplay);
+		// Get rows after edit
+		_tableRowsAfterEdit = $('tbody.NotesAfterEdit > tr', _channelDisplay);
+
 		// Text boxes, associative array for easier access later
 		_tbxCVs = new Array();
 		for (var i = 0; i < CVs.length; i++) {
@@ -196,8 +203,25 @@ function MC8SequencerChannel(channelNo)
 	}
 
 
+	this.displayEmptyRow = function (tr) {
+		for (var i = 0; i < tr.cells.length; i++) {
+			tr.cells[i].innerHTML = '&nbsp;';
+		}
+	}
+
+	this.displayNoteRow = function (tr, note, CVs) {
+		var cellIdx = 0;
+		for (var i = 0; i < CVs.length; i++) {
+			tr.cells[cellIdx++].innerText = note[CVs[i]];
+		}
+		tr.cells[cellIdx++].innerText = note.StepTime;
+		tr.cells[cellIdx++].innerText = note.Gate;
+	}
+
 	this.displayNotes = function() {
-		
+		var noteIdx;
+		var tableRows;
+
 		// Exit if no notes
 		if (0 == this.Notes.length) {
 			return;
@@ -206,12 +230,39 @@ function MC8SequencerChannel(channelNo)
 		// Get Assigned CVS
 		var CVs = this.CVGetArray();
 
-		// Display Current note
+		// Get Current index
+		noteIdx = this.NoteCurrent;
+
+		// Display Current note in editor
 		for (var i = 0; i < CVs.length; i++) {
-			_tbxCVs[CVs[i]].val(this.Notes[this.NoteCurrent][CVs[i]]);
+			_tbxCVs[CVs[i]].val(this.Notes[noteIdx][CVs[i]]);
 		}
-		_tbxGate.val(this.Notes[this.NoteCurrent].Gate);
-		_tbxStepTime.val(this.Notes[this.NoteCurrent].StepTime);
+		_tbxGate.val(this.Notes[noteIdx].Gate);
+		_tbxStepTime.val(this.Notes[noteIdx].StepTime);
+
+		// Display notes after
+		noteIdx = this.NoteCurrent + 1;
+		for (var i = 0; i < this.config.rowsAfterEdit; i++) {
+			if (noteIdx >=this.Notes.length) {
+				this.displayEmptyRow(_tableRowsAfterEdit[i]);
+			}
+			else {
+				this.displayNoteRow(_tableRowsAfterEdit[i], this.Notes[noteIdx], CVs);
+			}
+
+			noteIdx++;
+		}
+
+		// Display notes before
+		noteIdx = this.NoteCurrent - this.config.rowsBeforeEdit;
+		for (var i = 0; i < this.config.rowsBeforeEdit; i++) {
+			if (noteIdx >= 0) {
+				this.displayNoteRow(_tableRowsBeforeEdit[i], this.Notes[noteIdx], CVs);
+			}
+			else {
+				this.displayEmptyRow(_tableRowsBeforeEdit[i]);
+			}
+		}
 	}
 
 	/////////////////////////////
