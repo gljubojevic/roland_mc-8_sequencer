@@ -44,21 +44,21 @@ var MC8Sequencer = function ()
 	{
 		// Check if allready assigned to same channel
 		if (-1 != ch && _channels[ch].CVCheckAssigned(cv))
-		{
-			return;
-		}
+		{	return;	}
 
 		// Remove CV from existing channel			
 		for (var i = 0; i < _channels.length; i++)
-		{
-			_channels[i].CVRem(cv);
-		}
+		{	_channels[i].CVRem(cv);	}
 
 		// Add to new channel
 		if (-1 != ch)
-		{
-			_channels[ch].CVAdd(cv);
-		}
+		{	_channels[ch].CVAdd(cv);	}
+	}
+
+	this.CVShowAssigment = function(cv, ch)
+	{
+		$('option:selected', _selCV[cv]).attr('selected', false);
+		$('option[value=' + ch +']', _selCV[cv]).attr('selected', true);
 	}
 
 	/////////////////////////////
@@ -150,24 +150,27 @@ var MC8Sequencer = function ()
 			// From where to load
 			var dataFrom = (_MC8Memory[pos++] | (_MC8Memory[pos++] << 8)) & MC8MemoryMask;
 			var dataTo = (_MC8Memory[pos + 1] | (_MC8Memory[pos + 2] << 8)) & MC8MemoryMask;
-			var dateLen = dataTo - dataFrom;
+			var dataLen = dataTo - dataFrom;
 
 			if (0 == (dataType & MC8CVCheckMask))
 			{
 				// this is CV
 				var cv = (dataType >> 3) & MC8CVCHMask;
 				_channels[ch].CVAdd(cv);
-				_channels[ch].loadCV(cv, dataFrom, dateLen, _MC8Memory);
+				_channels[ch].loadCV(cv, dataFrom, dataLen, _MC8Memory);
+
+				// Sync channel slection 
+				this.CVShowAssigment(cv, ch);
 			}
 			else if (MC8StepMask == (dataType & MC8StepMask))
 			{
 				// this is Step
-				_channels[ch].loadStep(dataFrom, dateLen, _MC8Memory);
+				_channels[ch].loadStep(dataFrom, dataLen, _MC8Memory);
 			}
 			else if (MC8GateMask == (dataType & MC8GateMask))
 			{
 				// this is Gate
-				_channels[ch].loadGate(dataFrom, dateLen, _MC8Memory);
+				_channels[ch].loadGate(dataFrom, dataLen, _MC8Memory);
 			}
 		}
 	}
@@ -212,10 +215,10 @@ var MC8Sequencer = function ()
 		for (var i = 0; i < 8; i++)
 		{
 			var ops = '<option value="-1">CH--</option>';
-			for (var j = 0; j < 8; j++)
-			{
+			for (var j = 0; j < 8; j++) {
 				ops += '<option value="' + j + '">CH' + j + '</option>';
 			}
+
 			var sel = $(config.selCVPrefixId + i);
 			sel.append(ops);
 
