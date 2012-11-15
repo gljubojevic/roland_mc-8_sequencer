@@ -71,10 +71,10 @@ var MC8Sequencer = function ()
 	var MC8EOB = 0xff;
 	var MC8SongConfig = 0x400c; // Song definition starts at this address
 
-	var MC8CVCheckMask = 0xc0;
-	var MC8StepMask = 0xc0;
-	var MC8GateMask = 0xe0;
-	var MC8CVCHMask = 0x07;
+	var MC8CVCheckMask = 0xc0;	// When two high bits are 0 than this is CV data
+	var MC8CVCHMask = 0x07; 	// Channel/CV mask, channel is always 3 lower bits, CV is bits 3-5
+	var MC8StepMask = 0xc0; 	// Mask for determining step two high bits are one -> %11000000
+	var MC8GateMask = 0xe0;		// Mash for determining gate three high bits are one -> %11100000
 
 	var _MC8Memory;
 
@@ -132,45 +132,36 @@ var MC8Sequencer = function ()
 		pos++;	// Skip unknown byte
 		pos++;	// Skip unknown byte
 
-		// Get Tempo
-		_tempo = (_MC8Memory[pos++] & 0x7f) * 2;
-
-		// Get Time base
-		_timeBase = _MC8Memory[pos++];
+		_tempo = (_MC8Memory[pos++] & 0x7f) * 2;	// Get Tempo
+		_timeBase = _MC8Memory[pos++];				// Get Time base
 
 		// Read song until end of song reached
 		while (MC8EOB != _MC8Memory[pos])
 		{
-			// Get type what we load
-			var dataType = _MC8Memory[pos++];
-
-			// Extract channel
-			var ch = dataType & MC8CVCHMask;
+			var dataType = _MC8Memory[pos++];		// Get what we load
+			var ch = dataType & MC8CVCHMask;		// Extract channel
 
 			// From where to load
 			var dataFrom = (_MC8Memory[pos++] | (_MC8Memory[pos++] << 8)) & MC8MemoryMask;
 			var dataTo = (_MC8Memory[pos + 1] | (_MC8Memory[pos + 2] << 8)) & MC8MemoryMask;
 			var dataLen = dataTo - dataFrom;
 
-			if (0 == (dataType & MC8CVCheckMask))
-			{
+			if (0 == (dataType & MC8CVCheckMask)) {
 				// this is CV
 				var cv = (dataType >> 3) & MC8CVCHMask;
 				_channels[ch].CVAdd(cv);
 				_channels[ch].loadCV(cv, dataFrom, dataLen, _MC8Memory);
 
-				// Sync channel slection 
+				// Sync channel slecetion 
 				this.CVShowAssigment(cv, ch);
 			}
-			else if (MC8StepMask == (dataType & MC8StepMask))
-			{
+			else if (MC8GateMask == (dataType & MC8GateMask)) {
+				// this is Gate, NOTE: Gate must be checked BEFORE step time
+				_channels[ch].loadGate(dataFrom, dataLen, _MC8Memory);
+			}
+			else if (MC8StepMask == (dataType & MC8StepMask)) {
 				// this is Step
 				_channels[ch].loadStep(dataFrom, dataLen, _MC8Memory);
-			}
-			else if (MC8GateMask == (dataType & MC8GateMask))
-			{
-				// this is Gate
-				_channels[ch].loadGate(dataFrom, dataLen, _MC8Memory);
 			}
 		}
 	}
