@@ -1,5 +1,6 @@
 ﻿/// <reference path="MC8BitStreamDecoder.js" />
 /// <reference path="MC8FrequencyDecoder.js" />
+/// <reference path="MC8Sequencer.js" />
 
 // http: //airtightinteractive.com/demos/js/reactive/
 // http: //uglyhack.appspot.com/webaudiotoy/
@@ -14,21 +15,25 @@ var MC8Analyzer = function ()
 	var config = {
 		logViewId: '#AnalyzeLog',
 		inputFileId: '#FileLoadMC8Data',
+		btnLoadFromWaveId: '#btnLoadFromWave',
+		btnLoadDemoId: '#btnLoadDemo',
 		btnPlayWaveId: '#btnAnalyzerPlayWave',
-		btnAnalyzeId: '#btnAnalyze',
-		btnClearLogId: '#btnClearLog',
+		btnDumpBitsId:'#btnAnalyzerDumpBits',
+		btnDumpBytesId: '#btnAnalyzerDumpBytes',
+		btnDumpBitsAndBytesId: '#btnAnalyzerDumpBitsAndBytes',
 		selLoFreqToleranceId: '#loFreqTolerance',
 		selHiFreqToleranceId: '#hiFreqTolerance',
-		audioContainerId: '#MC8ProgramDataAudio',
 		loFreqTolerance: 10,
 		hiFreqTolerance: 25
 	};
 
-	var audioContext = new window.webkitAudioContext(); 	// Create Audio Context
-	var bufferSource = audioContext.createBufferSource(); // Create buffer source;
+	var audioContext = new window.webkitAudioContext();		// Create Audio Context
+	var bufferSource = audioContext.createBufferSource();	// Create buffer source;
 
 	// Store reference to sequence bytes here
+	this.SequencerBits = null;
 	this.SequencerBytes = null;
+	this.SequencerBitsAndBytes = null;
 
 	this.log = function ()
 	{
@@ -65,21 +70,35 @@ var MC8Analyzer = function ()
 	{
 		freqDec = new MC8FrequencyDecoder();
 		freqDec.frequencyDetect(bufferSource.buffer.getChannelData(0), bufferSource.buffer.sampleRate);
-		this.log("No Freq detected:" + freqDec._frequencyData.length);
+		//this.log("No Freq detected:" + freqDec._frequencyData.length);
 
 		bitStreamDec = new MC8BitStreamDecoder();
 		bitStreamDec.LoFreqTolerance = config.loFreqTolerance / 100.0;
 		bitStreamDec.HiFreqTolerance = config.hiFreqTolerance / 100.0;
-		bitStream = bitStreamDec.BitStreamDecode(freqDec._frequencyData);
-		this.log("BitStream:\n" + bitStream);
+		this.SequencerBits = bitStreamDec.BitStreamDecode(freqDec._frequencyData);
 
 		this.SequencerBytes = bitStreamDec.BitStreamToBytes();
-		this.log("Bytes:\n" + this.SequencerBytes.join(', '));
-		// Display bytes and bits
-		for (var i = 0; i < bitStreamDec.DecodedBytesData.length; i++) {
-			this.log(i, bitStreamDec.DecodedBytesData[i].bits, bitStreamDec.DecodedBytesData[i].val);
-		}
+		this.SequencerBitsAndBytes = bitStreamDec.DecodedBytesData;
+
+		this.enableUIDumpCmd();
 	};
+
+	// Display bitstream
+	this.dumpBitStream = function () {
+		this.log("BitStream:\n" + this.SequencerBits);
+	}
+
+	// Display Bytes
+	this.dumpBytes = function() {
+		this.log("Bytes:\n" + this.SequencerBytes.join(', '));
+	}
+
+	// Display bits and bytes 
+	this.dumpBitsAndBytes = function () {
+		for (var i = 0; i < this.SequencerBitsAndBytes.length; i++) {
+			this.log(i, this.SequencerBitsAndBytes[i].bits, this.SequencerBitsAndBytes[i].val);
+		}
+	}
 
 	/////////////////////////////
 	// Extras
@@ -91,6 +110,18 @@ var MC8Analyzer = function ()
 		//bufferSource.noteOff();
 		bufferSource.noteOn(0);
 	};
+
+	this.enableUICmd = function(){
+		$(config.btnLoadFromWaveId).prop('disabled', false);
+		$(config.btnPlayWaveId).prop('disabled', false);
+		_analyzer.log("Wave loaded");
+	}
+
+	this.enableUIDumpCmd = function () {
+		$(config.btnDumpBitsId).prop('disabled', false);
+		$(config.btnDumpBytesId).prop('disabled', false);
+		$(config.btnDumpBitsAndBytesId).prop('disabled', false);
+	}
 
 	/////////////////////////////
 	// Load
@@ -114,9 +145,7 @@ var MC8Analyzer = function ()
 				{
 					bufferSource.buffer = buffer;
 					bufferSource.connect(audioContext.destination);
-					$(config.btnAnalyzeId).prop('disabled', false);
-					$(config.btnPlayWaveId).prop('disabled', false);
-					_analyzer.log("Wave loaded");
+					_analyzer.enableUICmd();
 				},
 				function (e)
 				{
@@ -127,11 +156,24 @@ var MC8Analyzer = function ()
 		else
 		{
 			bufferSource.buffer = audioContext.createBuffer(evt.target.result, false);
-			$(config.btnAnalyzeId).prop('disabled', false);
-			$(config.btnPlayWaveId).prop('disabled', false);
-			_analyzer.log("Wave loaded");
+			_analyzer.enableUICmd();
 		}
 	}
+
+	this.loadFromUrl = function(url)
+	{
+		// Load asynchronously
+		var request = new XMLHttpRequest();
+		request.open("GET", url, true);
+		request.responseType = "arraybuffer";
+		request.onload = function () {
+			bufferSource.buffer = audioContext.createBuffer(request.response, false);
+			_analyzer.enableUICmd();
+		};
+
+		request.send();
+	}
+
 
 	this.callbackLoadProgram = function (file)
 	{
@@ -155,28 +197,41 @@ var MC8Analyzer = function ()
 	this.initAnalyzer = function ()
 	{
 		//File
-		$(config.inputFileId).change(function ()
-		{
+		$(config.inputFileId).change(function () {
 			_analyzer.callbackLoadProgram(this.files[0]);
 		});
 
+		// Load demo
+		$(config.btnLoadDemoId).click(function () {
+			_analyzer.loadFromUrl('test_bach-mc8-data.wav');
+		});
+
+		// btn Load from Wave
+		$(config.btnLoadFromWaveId).click(function () {
+			// Call this in context of analyzer
+			_analyzer.analyzeAudioBuffer.call(_analyzer);
+			// Load in sequencer
+			MC8Sequencer.loadSequence(_analyzer.SequencerBytes);
+		});
+
 		// btn Play
-		$(config.btnPlayWaveId).click(function ()
-		{
+		$(config.btnPlayWaveId).click(function () {
 			_analyzer.playAudioBuffer();
 		});
 
-		// btn Analyze
-		$(config.btnAnalyzeId).click(function ()
-		{
-			_analyzer.analyzeAudioBuffer.call(_analyzer);
-			//_analyzer.analyzeAudioBuffer();
+		// btn dump bits
+		$(config.btnDumpBitsId).click(function () {
+			_analyzer.dumpBitStream();
 		});
 
-		// btn log clear
-		$(config.btnClearLogId).click(function ()
-		{
-			_analyzer.logClear();
+		// btn dump bytes
+		$(config.btnDumpBytesId).click(function () {
+			_analyzer.dumpBytes();
+		});
+
+		// btn dump bits and bytes
+		$(config.btnDumpBitsAndBytesId).click(function () {
+			_analyzer.dumpBitsAndBytes();
 		});
 
 		// Freq Tolerance
@@ -187,7 +242,7 @@ var MC8Analyzer = function ()
 
 		for (var i = 0; i < 55; i += 5)
 		{
-			var opt = '<option value="' + i + '">' + i + '</option>';
+			var opt = '<option value="' + i + '">' + i + '%</option>';
 			loFreq.append(opt);
 			hiFreq.append(opt);
 		}
@@ -195,12 +250,10 @@ var MC8Analyzer = function ()
 		$('option[value=' + config.loFreqTolerance + ']', loFreq).prop('selected', true);
 		$('option[value=' + config.hiFreqTolerance + ']', hiFreq).prop('selected', true);
 
-		loFreq.change(function ()
-		{
+		loFreq.change(function () {
 			config.loFreqTolerance = parseInt($(this).val());
 		});
-		hiFreq.change(function ()
-		{
+		hiFreq.change(function () {
 			config.hiFreqTolerance = parseInt($(this).val());
 		});
 	};

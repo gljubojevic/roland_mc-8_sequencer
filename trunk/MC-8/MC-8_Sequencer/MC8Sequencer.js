@@ -9,8 +9,7 @@ var MC8Sequencer = function () {
 		tbxTimeBaseId: '#tbxTimeBase',
 		tbxCurrentStepId: '#tbxCurrentStep',
 		btnPlayPauseId: '#btnPlayPause',
-		btnStopId: '#btnStop',
-		btnLoadFromAnalyzerId: '#btnLoadFromAnalyzer'
+		btnStopId: '#btnStop'
 	};
 
 	var _sequencer = this;
@@ -269,11 +268,6 @@ var MC8Sequencer = function () {
 		_tbxTempo = $(config.tbxTempoId);
 		_tbxTimeBase = $(config.tbxTimeBaseId);
 		_tbxCurrentStep = $(config.tbxCurrentStepId);
-
-		// btn load from analyzer
-		$(config.btnLoadFromAnalyzerId).click(function () {
-			_sequencer.loadSequence(MC8Analyzer.SequencerBytes);
-		});
 
 		// btn Play/Pause
 		$(config.btnPlayPauseId).click(function () {
