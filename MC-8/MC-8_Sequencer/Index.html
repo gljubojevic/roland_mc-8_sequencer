@@ -25,12 +25,25 @@
 <body>
 <h1>Roland MC-8 Sequencer</h1>
 <fieldset>
+	<legend>Loader</legend>
+	<label for="loFreqTolerance">LO Freq tolerance:</label><select id="loFreqTolerance"></select>
+	<label for="hiFreqTolerance">HI Freq tolerance:</label><select id="hiFreqTolerance"></select>
+	<label for="FileLoadMC8Data">Sequence audio:</label><input type="file" name="WaveToAnlyze" id="FileLoadMC8Data" />
+	<input type="button" value="Load Bach demo" id="btnLoadDemo" />
+	<br />
+	<input type="button" value="Load from Audio" id="btnLoadFromWave" disabled="disabled" />
+	<input type="button" value="Play" id="btnAnalyzerPlayWave" disabled="disabled" />
+	<input type="button" value="Dump bits" id="btnAnalyzerDumpBits" disabled="disabled" />
+	<input type="button" value="Dump bytes" id="btnAnalyzerDumpBytes" disabled="disabled" />
+	<input type="button" value="Dump bits and bytes" id="btnAnalyzerDumpBitsAndBytes" disabled="disabled" />
+</fieldset>
+<fieldset>
 	<legend>Settings</legend>
 	<label for="tbxTimeBase">Timebase:</label><input type="text" id="tbxTimeBase" size="3" maxlength="3" />
 	<label for="tbxTempo">Tempo:</label><input type="text" id="tbxTempo" size="3" maxlength="3" />
-	<input type="button" id="btnLoadFromAnalyzer" value="Load from analyzer" />
-	<input type="button" id="btnPlayPause" value="Play/Pause" /><input type="button" id="btnStop" value="Stop" />
-	<label for="tbxCurrentStep">Current step:</label><input type="text" disabled="disabled" id="tbxCurrentStep" size="5" maxlength="5" /><br />
+	<label for="tbxCurrentStep">Current step:</label><input type="text" disabled="disabled" id="tbxCurrentStep" size="5" maxlength="5" />
+	<input type="button" id="btnPlayPause" value="Play/Pause" />
+	<input type="button" id="btnStop" value="Stop" /><br />
 	<label for="selCV0">CV0-></label><select id="selCV0"></select>
 	<label for="selCV1">CV1-></label><select id="selCV1"></select>
 	<label for="selCV2">CV2-></label><select id="selCV2"></select>
@@ -44,23 +57,9 @@
 	<legend>Channels</legend>
 	<div id="seqChannels"></div>
 </fieldset>
-
-
 <fieldset>
-	<legend>Analyzer</legend>
-	
-	<div>
-		<label for="loFreqTolerance">LO Freq tolerance %:</label><select id="loFreqTolerance"></select>
-		<label for="hiFreqTolerance">HI Freq tolerance %:</label><select id="hiFreqTolerance"></select>
-		<label for="FileLoadMC8Data">Program data audio:</label><input type="file" name="WaveToAnlyze" id="FileLoadMC8Data" />
-	</div>
-	<div>
-		<input type="button" value="Play" id="btnAnalyzerPlayWave" disabled="disabled" />
-		<input type="button" value="Analyze" id="btnAnalyze" disabled="disabled" />
-		<input type="button" value="Clear log" id="btnClearLog" />
-	</div>
-	<div id="MC8ProgramDataAudio"></div>
-	<div id="AnalyzeLog" style="width:100%;overflow:scroll;"></div>
+	<legend>Log</legend>
+	<div id="AnalyzeLog"></div>
 </fieldset>
 
 </body>
