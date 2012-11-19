@@ -1,6 +1,7 @@
 ﻿/// <reference path="MC8BitStreamDecoder.js" />
 /// <reference path="MC8FrequencyDecoder.js" />
 /// <reference path="MC8Sequencer.js" />
+/// <reference path="MC8Tracker.js" />
 
 // http: //airtightinteractive.com/demos/js/reactive/
 // http: //uglyhack.appspot.com/webaudiotoy/
@@ -23,6 +24,7 @@ var MC8Analyzer = function ()
 		btnDumpBitsAndBytesId: '#btnAnalyzerDumpBitsAndBytes',
 		selLoFreqToleranceId: '#loFreqTolerance',
 		selHiFreqToleranceId: '#hiFreqTolerance',
+		callbackLoadSequence: null,
 		loFreqTolerance: 10,
 		hiFreqTolerance: 25
 	};
@@ -194,8 +196,11 @@ var MC8Analyzer = function ()
 	/////////////////////////////
 
 	// Init and attach
-	this.initAnalyzer = function ()
+	this.initAnalyzer = function (callbackLoadSequence)
 	{
+		// Set callback
+		config.callbackLoadSequence = callbackLoadSequence;
+
 		//File
 		$(config.inputFileId).change(function () {
 			_analyzer.callbackLoadProgram(this.files[0]);
@@ -211,7 +216,16 @@ var MC8Analyzer = function ()
 			// Call this in context of analyzer
 			_analyzer.analyzeAudioBuffer.call(_analyzer);
 			// Load in sequencer
-			MC8Sequencer.loadSequence(_analyzer.SequencerBytes);
+			if (null != config.callbackLoadSequence) {
+				config.callbackLoadSequence(_analyzer.SequencerBytes);
+			}
+
+			//if (MC8Sequencer) {
+			//	MC8Sequencer.loadSequence(_analyzer.SequencerBytes);
+			//}
+			//if (MC8Tracker) {
+			//	MC8Tracker.loadSequence(_analyzer.SequencerBytes);
+			//}
 		});
 
 		// btn Play
