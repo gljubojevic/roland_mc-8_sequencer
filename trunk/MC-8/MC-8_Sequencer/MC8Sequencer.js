@@ -9,7 +9,9 @@ var MC8Sequencer = function () {
 		tbxTimeBaseId: '#tbxTimeBase',
 		tbxCurrentStepId: '#tbxCurrentStep',
 		btnPlayPauseId: '#btnPlayPause',
-		btnStopId: '#btnStop'
+		btnStopId: '#btnStop',
+		rowsBeforeEdit: 5,
+		rowsAfterEdit: 5
 	};
 
 	var _sequencer = this;
@@ -237,7 +239,7 @@ var MC8Sequencer = function () {
 		// Create empty channels
 		_channels = new Array();
 		for (var i = 0; i < 8; i++) {
-			var chn = new MC8SequencerChannel(i);
+			var chn = new MC8SequencerChannel(i, config.rowsBeforeEdit, config.rowsAfterEdit);
 			chn.Init();
 			_channels.push(chn);
 		}
