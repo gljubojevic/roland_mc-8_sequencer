@@ -4,27 +4,35 @@
 var MC8Tracker = function () {
 	// Config
 	var config = {
+		channelContainerId: '#seqChannels',
 		selCVPrefixId: '#selCV',
 		tbxTempoId: '#tbxTempo',
 		tbxTimeBaseId: '#tbxTimeBase',
 		tbxCurrentStepId: '#tbxCurrentStep',
 		btnPlayPauseId: '#btnPlayPause',
-		btnStopId: '#btnStop'
+		btnStopId: '#btnStop',
+		rowsBeforeEdit: 5,
+		rowsAfterEdit: 5
 	};
 
 	var _sequencer = this;
 
-	var _channels; 		// All channels
-	var _tempo; 			// Current tempo
-	var _timeBase; 			// Current timebase
-	var _playingTimer = null; // Indication sequencer playing or not
+	var _channels; 				// All channels
+	var _tempo = 0; 			// Current tempo
+	var _timeBase = 0; 			// Current timebase
 	var _currentStep = 0;
+	var _playingTimer = null; // Indication sequencer playing or not
 
 	// UI ref
+	var _channelContainer;
 	var _selCV = null;
 	var _tbxTempo = null;
 	var _tbxTimeBase = null;
 	var _tbxCurrentStep = null;
+	var _transportUI;
+	var _transportEdit;
+	var _transportAfterEdit;
+	var _transportBeforeEdit;
 
 	/////////////////////////////
 	// Playback
@@ -35,6 +43,8 @@ var MC8Tracker = function () {
 		for (var i = 0; i < _channels.length; i++) {
 			_channels[i].sequencerRun();
 		}
+
+		this.displayTransport();
 
 		_currentStep++;
 		_tbxCurrentStep.val(_currentStep);
@@ -81,6 +91,8 @@ var MC8Tracker = function () {
 		// Reset current step
 		_currentStep = 0;
 		_tbxCurrentStep.val(_currentStep);
+
+		this.displayTransport();
 
 		// Reset all channels
 		for (var i = 0; i < _channels.length; i++) {
@@ -221,12 +233,84 @@ var MC8Tracker = function () {
 		_tbxTimeBase.val(_timeBase);
 		_tbxCurrentStep.val(_currentStep);
 
+		this.displayTransport();
+
 		// Display channel data
 		for (var i = 0; i < _channels.length; i++) {
 			_channels[i].displayNotes();
 		}
 	}
 
+	/////////////////////////////
+	// Display Transport
+	/////////////////////////////
+
+	this.createTransportTemplate = function()
+	{
+		var row = '<tr><td>---</td><td>---</td></tr>';
+		var html = '<table id="transport" class="channel">';
+		html += '<caption>Transport</caption>';
+		html += '<thead><tr><th>Mes.</th><th>Step</th></tr></thead>';
+
+		html += '<tbody class="NotesBeforeEdit">';
+		for (var i = 0; i < config.rowsBeforeEdit; i++)
+		{ html += row; }
+		html += '</tbody>';
+
+		html += '<tbody class="NotesEdit">';
+		html += row
+		html += '</tbody>';
+
+		html += '<tbody class="NotesAfterEdit">';
+		for (var i = 0; i < config.rowsAfterEdit; i++)
+		{ html += row; }
+		html += '</tbody>';
+
+		html +='</table>';
+
+		return html;
+	}
+
+	this.displayTransportRow = function(step, tr)
+	{
+		if (0 > step) {
+			tr.cells[0].innerHTML = '&nbsp;';
+			tr.cells[1].innerHTML = '&nbsp;';
+			return;
+		}
+
+		if (0 != (step % _timeBase)) {
+			tr.cells[0].innerHTML = '&nbsp;';
+		}
+		else {
+			tr.cells[0].innerHTML = Math.floor(step / _timeBase);
+		}
+		tr.cells[1].innerHTML = (step % _timeBase).toString();
+	}
+
+	this.displayTransport = function()
+	{
+		var step;
+		// Exit if no timebase
+		if (0 == _timeBase) {
+			return;
+		}
+
+		// First display current step
+		this.displayTransportRow(_currentStep, _transportEdit);
+
+		// display steps affter
+		step = _currentStep + 1;
+		for (var i = 0; i < config.rowsAfterEdit; i++) {
+			this.displayTransportRow(step++, _transportAfterEdit[i]);
+		}
+
+		// display steps before
+		step = _currentStep - config.rowsBeforeEdit;
+		for (var i = 0; i < config.rowsBeforeEdit; i++) {
+			this.displayTransportRow(step++, _transportBeforeEdit[i]);
+		}
+	}
 
 	/////////////////////////////
 	// Init
@@ -234,6 +318,17 @@ var MC8Tracker = function () {
 
 	// Init and attach
 	this.initSequencer = function () {
+
+		// Get Container ref
+		_channelContainer = $(config.channelContainerId);
+
+		// Create transport
+		_channelContainer.append(this.createTransportTemplate());
+		_transportUI = $('#transport', _channelContainer);
+		_transportEdit = $('tbody.NotesEdit > tr', _transportUI)[0];
+		_transportAfterEdit = $('tbody.NotesAfterEdit > tr', _transportUI);
+		_transportBeforeEdit = $('tbody.NotesBeforeEdit > tr', _transportUI);
+
 		// Create empty channels
 		_channels = new Array();
 		for (var i = 0; i < 8; i++) {
