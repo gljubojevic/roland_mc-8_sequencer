@@ -12,7 +12,7 @@
 	this.StepTime = 0;
 }
 
-function MC8SequencerChannel(channelNo)
+function MC8SequencerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 {
 	// Set channel no on construction
 	this.ChannelNo = channelNo;
@@ -30,8 +30,8 @@ function MC8SequencerChannel(channelNo)
 	// Config for channel
 	this.config = {
 		containerId: '#seqChannels',
-		rowsBeforeEdit:5,
-		rowsAfterEdit:5
+		rowsBeforeEdit: rowsBeforeEdit,
+		rowsAfterEdit: rowsAfterEdit
 	}
 
 	// variables

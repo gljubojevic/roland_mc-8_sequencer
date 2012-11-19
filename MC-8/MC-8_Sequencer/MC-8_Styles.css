@@ -42,6 +42,7 @@ table.channel tbody.NotesEdit
 
 table.channel tbody.NotesEdit td
 {
+	height:28px;
 	padding:0px;
 }
 

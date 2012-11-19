@@ -11,8 +11,8 @@ var MC8Tracker = function () {
 		tbxCurrentStepId: '#tbxCurrentStep',
 		btnPlayPauseId: '#btnPlayPause',
 		btnStopId: '#btnStop',
-		rowsBeforeEdit: 5,
-		rowsAfterEdit: 5
+		rowsBeforeEdit: 10,
+		rowsAfterEdit: 10
 	};
 
 	var _sequencer = this;
@@ -332,7 +332,7 @@ var MC8Tracker = function () {
 		// Create empty channels
 		_channels = new Array();
 		for (var i = 0; i < 8; i++) {
-			var chn = new MC8TrackerChannel(i);
+			var chn = new MC8TrackerChannel(i, config.rowsBeforeEdit, config.rowsAfterEdit);
 			chn.Init();
 			_channels.push(chn);
 		}
