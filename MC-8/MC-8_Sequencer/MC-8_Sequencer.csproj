@@ -51,6 +51,9 @@
     <Reference Include="System.Web.ApplicationServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="MC8TrackerChannel.js" />
+    <Content Include="MC8Tracker.js" />
+    <Content Include="IndexTracker.html" />
     <Content Include="Global.asax" />
     <Content Include="Index.html" />
     <Content Include="MC-8_Styles.css" />

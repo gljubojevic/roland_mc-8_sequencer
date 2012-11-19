@@ -1,31 +1,32 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Roland MC-8 sequencer</title>
+    <title>Roland MC-8 tracker</title>
 	<link href="MC-8_Styles.css" rel="stylesheet" type="text/css" />
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
 	<script src="MC8FrequencyDecoder.js" type="text/javascript"></script>
 	<script src="MC8BitStreamDecoder.js" type="text/javascript"></script>
 	<script src="MC8Analyzer.js" type="text/javascript"></script>
-	<script src="MC8SequencerChannel.js" type="text/javascript"></script>
-	<script src="MC8Sequencer.js" type="text/javascript"></script>
+	<script src="MC8TrackerChannel.js" type="text/javascript"></script>
+	<script src="MC8Tracker.js" type="text/javascript"></script>
 	<script type="text/javascript">
 		// Start/Init
 		$(document).ready(function ()
 		{
 			// Init sequencer
-			MC8Sequencer.initSequencer();
+			MC8Tracker.initSequencer();
 
 			// Init Analyzer
 			MC8Analyzer.initAnalyzer(function(data){
-				MC8Sequencer.loadSequence(data);
+				MC8Tracker.loadSequence(data);
 			});
+
 		});
 	</script>
 </head>
 <body>
-<h1>Roland MC-8 Sequencer</h1>
-<a href="IndexTracker.html">MC-8 Tracker</a>
+<h1>Roland MC-8 Tracker</h1>
+<a href="Index.html">MC-8 Sequencer</a>
 <fieldset>
 	<legend>Loader</legend>
 	<label for="loFreqTolerance">LO Freq tolerance:</label><select id="loFreqTolerance"></select>
