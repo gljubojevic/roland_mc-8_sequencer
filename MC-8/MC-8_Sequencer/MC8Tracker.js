@@ -40,13 +40,15 @@ var MC8Tracker = function () {
 	/////////////////////////////
 
 	this.sequencerStep = function () {
+		// Show Current step
+		_tbxCurrentStep.val(_currentStep);
+
 		// Run sequencer on all channels
 		for (var i = 0; i < _channels.length; i++) {
 			_channels[i].sequencerRun();
 		}
 		// Show transport
 		this.displayTransport();
-		_tbxCurrentStep.val(_currentStep);
 
 		// Next step
 		_currentStep++;
