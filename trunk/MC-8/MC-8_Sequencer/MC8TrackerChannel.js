@@ -131,20 +131,18 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 			return;
 		}
 
-		if (this.NoteCurrentStep >= this.Notes[this.NoteCurrent].StepTime) {
+		if (this.NoteCurrentStep > this.Notes[this.NoteCurrent].StepTime) {
 			this.NoteCurrentStep = 0;
 			this.NoteCurrent++;
 		}
 
-		if (this.NoteCurrent >= this.Notes.length) {
-			return;
-		}
-
-		if (0 == this.NoteCurrentStep) {
+		if (0 == this.NoteCurrentStep && this.NoteCurrent < this.Notes.length) {
 			// TODO: Playback note
-			this.displayNotes();
 		}
 
+		this.displayNotes();
+
+		// Next step
 		this.NoteCurrentStep++;
 	}
 
@@ -274,18 +272,20 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 			_tbxGate.val(this.Notes[noteIdx].Gate);
 			_tbxStepTime.val(this.Notes[noteIdx].StepTime);
 		}
+		else {
+			// Empty boxes
+			for (var i = 0; i < CVs.length; i++) {
+				_tbxCVs[CVs[i]].val('');
+			}
+			_tbxGate.val('');
+			_tbxStepTime.val('');
+		}
 
 
 		// Display notes after
 		noteIdx = this.NoteCurrent;
 		step = this.NoteCurrentStep+1;
 		for (var i = 0; i < this.config.rowsAfterEdit; i++) {
-
-			// Check if note finished
-			if (this.Notes[noteIdx].StepTime < step) {
-				step = 0;
-				noteIdx++;
-			}
 
 			if (0 == step && noteIdx < this.Notes.length) {
 				this.displayNoteRow(_tableRowsAfterEdit[i], this.Notes[noteIdx], CVs);
@@ -294,21 +294,34 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 				this.displayEmptyRow(_tableRowsAfterEdit[i]);
 			}
 
+			// Check if note finished
 			step++;
+			if (this.Notes[noteIdx].StepTime < step) {
+				step = 0;
+				noteIdx++;
+			}
 		}
 
 		// Display notes before
-//		noteIdx = this.NoteCurrent - this.config.rowsBeforeEdit;
-//		for (var i = 0; i < this.config.rowsBeforeEdit; i++) {
-//			if (noteIdx >= 0) {
-//				this.displayNoteRow(_tableRowsBeforeEdit[i], this.Notes[noteIdx], CVs);
-//			}
-//			else {
-//				this.displayEmptyRow(_tableRowsBeforeEdit[i]);
-//			}
+		noteIdx = this.NoteCurrent;
+		step = this.NoteCurrentStep - 1;
+		for (var i = this.config.rowsBeforeEdit-1; i >=0 ; i--) {
 
-//			noteIdx++;
-//		}
+			if (0 == step && noteIdx >= 0) {
+				this.displayNoteRow(_tableRowsBeforeEdit[i], this.Notes[noteIdx], CVs);
+			}
+			else {
+				this.displayEmptyRow(_tableRowsBeforeEdit[i]);
+			}
+
+			step--;
+			if (step < 0) {
+				noteIdx--;
+				if (noteIdx >= 0) {
+					step = this.Notes[noteIdx].StepTime;
+				}
+			}
+		}
 	}
 
 	/////////////////////////////

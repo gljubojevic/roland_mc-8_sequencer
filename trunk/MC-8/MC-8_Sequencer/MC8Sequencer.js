@@ -40,17 +40,17 @@ var MC8Sequencer = function () {
 
 		_currentStep++;
 		_tbxCurrentStep.val(_currentStep);
-		this.sequencerSetTimer();
 	}
 
 	this.sequencerSetTimer = function () {
 		// Calculate timeout
-		var timeOut = (60 * 1000) / _tempo / _tbxTimeBase;
+		var timeOut = (60 * 1000) / _tempo / _timeBase;
 
 		// Start Timer
 		_playingTimer = setTimeout(
 			function () {
 				_sequencer.sequencerStep();
+				_sequencer.sequencerSetTimer();
 			}, timeOut
 		);
 	}
@@ -268,7 +268,15 @@ var MC8Sequencer = function () {
 
 		// Init text boxes
 		_tbxTempo = $(config.tbxTempoId);
+		_tbxTempo.change(function () {
+			_tempo = $(this).val();
+		});
+
 		_tbxTimeBase = $(config.tbxTimeBaseId);
+		_tbxTimeBase.change(function () {
+			_timeBase = $(this).val();
+		});
+
 		_tbxCurrentStep = $(config.tbxCurrentStepId);
 
 		// btn Play/Pause

@@ -131,16 +131,12 @@ function MC8SequencerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 			return;
 		}
 
-		if (this.NoteCurrentStep >= this.Notes[this.NoteCurrent].StepTime) {
+		if (this.NoteCurrentStep > this.Notes[this.NoteCurrent].StepTime) {
 			this.NoteCurrentStep = 0;
 			this.NoteCurrent++;
 		}
 
-		if (this.NoteCurrent >= this.Notes.length) {
-			return;
-		}
-
-		if (0 == this.NoteCurrentStep) {
+		if (0 == this.NoteCurrentStep && this.NoteCurrent < this.Notes.length) {
 			// TODO: Playback note
 			this.displayNotes();
 		}

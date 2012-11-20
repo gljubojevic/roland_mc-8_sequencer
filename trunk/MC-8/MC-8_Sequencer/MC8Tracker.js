@@ -11,6 +11,7 @@ var MC8Tracker = function () {
 		tbxCurrentStepId: '#tbxCurrentStep',
 		btnPlayPauseId: '#btnPlayPause',
 		btnStopId: '#btnStop',
+		btnSeqAdvance:'#btnSeqAdvance',
 		rowsBeforeEdit: 10,
 		rowsAfterEdit: 10
 	};
@@ -43,22 +44,23 @@ var MC8Tracker = function () {
 		for (var i = 0; i < _channels.length; i++) {
 			_channels[i].sequencerRun();
 		}
-
+		// Show transport
 		this.displayTransport();
-
-		_currentStep++;
 		_tbxCurrentStep.val(_currentStep);
-		this.sequencerSetTimer();
+
+		// Next step
+		_currentStep++;
 	}
 
 	this.sequencerSetTimer = function () {
 		// Calculate timeout
-		var timeOut = (60 * 1000) / _tempo / _tbxTimeBase;
+		var timeOut = (60 * 1000) / _tempo / _timeBase;
 
 		// Start Timer
 		_playingTimer = setTimeout(
 			function () {
 				_sequencer.sequencerStep();
+				_sequencer.sequencerSetTimer();
 			}, timeOut
 		);
 	}
@@ -361,8 +363,21 @@ var MC8Tracker = function () {
 
 		// Init text boxes
 		_tbxTempo = $(config.tbxTempoId);
+		_tbxTempo.change(function(){
+			_tempo = $(this).val();
+		});
+
 		_tbxTimeBase = $(config.tbxTimeBaseId);
+		_tbxTimeBase.change(function () {
+			_timeBase = $(this).val();
+		});
+
 		_tbxCurrentStep = $(config.tbxCurrentStepId);
+
+		// btn Sequencer Advance
+		$(config.btnSeqAdvance).click(function () {
+			_sequencer.sequencerStep();
+		});
 
 		// btn Play/Pause
 		$(config.btnPlayPauseId).click(function () {
