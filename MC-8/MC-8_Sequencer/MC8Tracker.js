@@ -103,6 +103,24 @@ var MC8Tracker = function () {
 		}
 	}
 
+	/////////////////////////////
+	// Edit
+	/////////////////////////////
+
+	this.editStepUpDown = function(direction)
+	{
+		// Calculate new postion
+		_currentStep +=direction;
+
+		// Show transport
+		_tbxCurrentStep.val(_currentStep);
+		this.displayTransport();
+
+		// Move all channels
+		for (var i = 0; i < _channels.length; i++) {
+			_channels[i].editStepUpDown(direction);
+		}
+	}
 
 	/////////////////////////////
 	// Channel assigment
@@ -339,6 +357,9 @@ var MC8Tracker = function () {
 		_channels = new Array();
 		for (var i = 0; i < 8; i++) {
 			var chn = new MC8TrackerChannel(i, config.rowsBeforeEdit, config.rowsAfterEdit);
+			chn.config.editStepUpDownCallback = function(direction){
+				_sequencer.editStepUpDown(direction);
+			};
 			chn.Init();
 			_channels.push(chn);
 		}
