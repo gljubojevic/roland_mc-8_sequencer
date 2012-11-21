@@ -31,7 +31,8 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 	this.config = {
 		containerId: '#seqChannels',
 		rowsBeforeEdit: rowsBeforeEdit,
-		rowsAfterEdit: rowsAfterEdit
+		rowsAfterEdit: rowsAfterEdit,
+		editStepUpDownCallback: null
 	}
 
 	// variables
@@ -153,6 +154,67 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 	}
 
 	/////////////////////////////
+	// Edit
+	/////////////////////////////
+
+	this.editStepUpDown = function(direction)
+	{
+		if (0 == this.Notes.length || this.NoteCurrent >= this.Notes.length) {
+			return;
+		}
+
+		this.NoteCurrentStep += direction;
+		if (this.NoteCurrentStep > this.Notes[this.NoteCurrent].StepTime) {
+			this.NoteCurrentStep = 0;
+			this.NoteCurrent++;
+		}
+
+		if (0 == this.NoteCurrentStep && this.NoteCurrent < this.Notes.length) {
+			// TODO: Playback note
+		}
+
+		this.displayNotes();
+	}
+
+	// TODO: end edit write note
+	this.editNoteFinished = function ()
+	{
+		
+	}
+
+	// Handle key down on edit fields
+	this.editHandleKeyDown = function(event)
+	{
+		switch (event.which) {
+			case 38:
+				event.preventDefault();
+				if (null != this.config.editStepUpDownCallback) {
+					this.config.editStepUpDownCallback(-1);
+				}
+				break;
+
+			case 40:
+				event.preventDefault();
+				if (null != this.config.editStepUpDownCallback) {
+					this.config.editStepUpDownCallback(1);
+				}
+				break;
+
+			case 13:
+				event.preventDefault();
+				this.editNoteFinished();
+				if (null != this.config.editStepUpDownCallback) {
+					this.config.editStepUpDownCallback(1);
+				}
+				break;
+
+			default:
+				// TODO: Check allowed characters
+				break;
+		}
+	}
+
+	/////////////////////////////
 	// Display
 	/////////////////////////////
 
@@ -229,7 +291,21 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 		_tbxGate = $('#CH' + this.ChannelNo + 'Gate', _channelDisplay);
 		_tbxStepTime = $('#CH' + this.ChannelNo + 'Step', _channelDisplay);
 
-		// TODO Atach events
+		// Atach keyboard events
+		var chn = this;
+		for (var i = 0; i < CVs.length; i++) {
+			_tbxCVs[CVs[i]].keydown(function(event){
+				chn.editHandleKeyDown(event)
+			});
+		}
+
+		_tbxGate.keydown(function (event) {
+			chn.editHandleKeyDown(event)
+		});
+
+		_tbxStepTime.keydown(function (event) {
+			chn.editHandleKeyDown(event)
+		});
 	}
 
 
