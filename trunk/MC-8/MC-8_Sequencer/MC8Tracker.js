@@ -274,7 +274,7 @@ var MC8Tracker = function () {
 		return html;
 	}
 
-	this.displayTransportRow = function(step, tr)
+	this.displayTransportRow = function(step, tr, measureSize)
 	{
 		if (0 > step) {
 			tr.cells[0].innerHTML = '&nbsp;';
@@ -282,13 +282,13 @@ var MC8Tracker = function () {
 			return;
 		}
 
-		if (0 != (step % _timeBase)) {
+		if (0 != (step % measureSize)) {
 			tr.cells[0].innerHTML = '&nbsp;';
 		}
 		else {
-			tr.cells[0].innerHTML = Math.floor(step / _timeBase);
+			tr.cells[0].innerHTML = Math.floor(step / measureSize);
 		}
-		tr.cells[1].innerHTML = (step % _timeBase).toString();
+		tr.cells[1].innerHTML = (step % measureSize).toString();
 	}
 
 	this.displayTransport = function()
@@ -299,19 +299,22 @@ var MC8Tracker = function () {
 			return;
 		}
 
+		// Measure size in 4/4 is 4*timebase
+		var measureSize = _timeBase * 4;
+
 		// First display current step
-		this.displayTransportRow(_currentStep, _transportEdit);
+		this.displayTransportRow(_currentStep, _transportEdit, measureSize);
 
 		// display steps affter
 		step = _currentStep + 1;
 		for (var i = 0; i < config.rowsAfterEdit; i++) {
-			this.displayTransportRow(step++, _transportAfterEdit[i]);
+			this.displayTransportRow(step++, _transportAfterEdit[i], measureSize);
 		}
 
 		// display steps before
 		step = _currentStep - config.rowsBeforeEdit;
 		for (var i = 0; i < config.rowsBeforeEdit; i++) {
-			this.displayTransportRow(step++, _transportBeforeEdit[i]);
+			this.displayTransportRow(step++, _transportBeforeEdit[i], measureSize);
 		}
 	}
 
