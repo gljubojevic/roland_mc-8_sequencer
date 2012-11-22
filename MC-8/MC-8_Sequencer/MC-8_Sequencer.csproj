@@ -51,6 +51,8 @@
     <Reference Include="System.Web.ApplicationServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="jquery.mousewheel.js" />
+    <Content Include="jquery.mousewheel.min.js" />
     <Content Include="MC8TrackerChannel.js" />
     <Content Include="MC8Tracker.js" />
     <Content Include="IndexTracker.html" />

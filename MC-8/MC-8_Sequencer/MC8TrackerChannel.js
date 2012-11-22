@@ -14,7 +14,10 @@
 
 function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 {
-	// Set channel no on construction
+	// Definition of note names
+	this.NoteDisplay=['C -','C#-','D -','D#-','E -', 'F -','F#-','G -','G#-','A -','A#-','B -'];
+
+	// Set channel number on construction
 	this.ChannelNo = channelNo;
 
 	// Playback control
@@ -300,14 +303,19 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 		}
 
 		_tbxGate.keydown(function (event) {
-			chn.editHandleKeyDown(event)
+			chn.editHandleKeyDown(event);
 		});
 
 		_tbxStepTime.keydown(function (event) {
-			chn.editHandleKeyDown(event)
+			chn.editHandleKeyDown(event);
 		});
 	}
 
+	this.getNoteString = function (cv)
+	{
+		cv &= 0x7f; // Fix Measure end
+		return this.NoteDisplay[cv % 12].replace('-', Math.floor(cv/ 12));
+	}
 
 	this.displayEmptyRow = function (tr) {
 		for (var i = 0; i < tr.cells.length; i++) {
@@ -318,7 +326,8 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 	this.displayNoteRow = function (tr, note, CVs) {
 		var cellIdx = 0;
 		for (var i = 0; i < CVs.length; i++) {
-			tr.cells[cellIdx++].innerText = note[CVs[i]];
+			//tr.cells[cellIdx++].innerText = note[CVs[i]];
+			tr.cells[cellIdx++].innerText = this.getNoteString(note[CVs[i]]);
 		}
 		tr.cells[cellIdx++].innerText = note.StepTime;
 		tr.cells[cellIdx++].innerText = note.Gate;
@@ -341,7 +350,7 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 		noteIdx = this.NoteCurrent;
 
 		// Display Current note in editor
-		if (0 == this.NoteCurrentStep) {
+		if (noteIdx < this.Notes.length && 0 == this.NoteCurrentStep) {
 			for (var i = 0; i < CVs.length; i++) {
 				_tbxCVs[CVs[i]].val(this.Notes[noteIdx][CVs[i]]);
 			}
@@ -365,7 +374,7 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 			step++;
 
 			// Check if note finished
-			if (this.Notes[noteIdx].StepTime < step) {
+			if (noteIdx < this.Notes.length && this.Notes[noteIdx].StepTime < step) {
 				step = 0;
 				noteIdx++;
 			}

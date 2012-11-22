@@ -112,6 +112,12 @@ var MC8Tracker = function () {
 		// Calculate new postion
 		_currentStep +=direction;
 
+		// Don't allow negative steps
+		if (0 > _currentStep) {
+			_currentStep = 0;
+			return;
+		}
+
 		// Show transport
 		_tbxCurrentStep.val(_currentStep);
 		this.displayTransport();
@@ -121,6 +127,23 @@ var MC8Tracker = function () {
 			_channels[i].editStepUpDown(direction);
 		}
 	}
+
+	// Handle mouse wheel on tracker area
+	// Crude but effective
+	this.editHandleMouseWheel = function (delta) {
+		event.preventDefault();
+		if (delta > 0) {
+			while (0 < delta--) {
+				this.editStepUpDown(-1);
+			}
+		}
+		else {
+			while (0 > delta++) {
+				this.editStepUpDown(1);
+			}
+		}
+	}
+
 
 	/////////////////////////////
 	// Channel assigment
@@ -352,6 +375,11 @@ var MC8Tracker = function () {
 		_transportEdit = $('tbody.NotesEdit > tr', _transportUI)[0];
 		_transportAfterEdit = $('tbody.NotesAfterEdit > tr', _transportUI);
 		_transportBeforeEdit = $('tbody.NotesBeforeEdit > tr', _transportUI);
+
+		// Mouse wheel only on transport area
+		_transportUI.mousewheel(function (event, delta, deltaX, deltaY) {
+			_sequencer.editHandleMouseWheel(delta);
+		});
 
 		// Create empty channels
 		_channels = new Array();
