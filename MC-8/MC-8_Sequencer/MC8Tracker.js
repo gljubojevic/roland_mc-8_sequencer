@@ -11,7 +11,7 @@ var MC8Tracker = function () {
 		tbxCurrentStepId: '#tbxCurrentStep',
 		btnPlayPauseId: '#btnPlayPause',
 		btnStopId: '#btnStop',
-		btnSeqAdvance:'#btnSeqAdvance',
+		btnSeqAdvance: '#btnSeqAdvance',
 		rowsBeforeEdit: 10,
 		rowsAfterEdit: 10
 	};
@@ -107,10 +107,9 @@ var MC8Tracker = function () {
 	// Edit
 	/////////////////////////////
 
-	this.editStepUpDown = function(direction)
-	{
+	this.editStepUpDown = function (direction) {
 		// Calculate new postion
-		_currentStep +=direction;
+		_currentStep += direction;
 
 		// Don't allow negative steps
 		if (0 > _currentStep) {
@@ -168,7 +167,7 @@ var MC8Tracker = function () {
 	}
 
 	/////////////////////////////
-	// Load sequencer memory
+	// Sequencer memory
 	/////////////////////////////
 
 	var MC8MemoryStart = 0x4000;
@@ -181,6 +180,7 @@ var MC8Tracker = function () {
 	var MC8CVCHMask = 0x07; 	// Channel/CV mask, channel is always 3 lower bits, CV is bits 3-5
 	var MC8StepMask = 0xc0; 	// Mask for determining step two high bits are one -> %11000000
 	var MC8GateMask = 0xe0; 	// Mash for determining gate three high bits are one -> %11100000
+	var MC8SeventhBit = 0x80; // Seventh bit for easier usage
 
 	var _MC8Memory;
 
@@ -191,6 +191,46 @@ var MC8Tracker = function () {
 			_MC8Memory[i] = 0;
 		}
 	}
+
+	/////////////////////////////
+	// Save sequencer memory
+	/////////////////////////////
+
+	// Save MC-8 momory to data chunks ready for bitstream output
+	this.saveMC8Memory = function () {
+	}
+
+	this.saveSequenceData = function () {
+		this.resetMC8Memory();
+
+		// Get song config address in array
+		var pos = MC8SongConfig & MC8MemoryMask;
+
+		pos++; // Skip unknown byte
+		pos++; // Skip unknown byte
+
+		// Tempo
+		_MC8Memory[pos++] = (_tempo >> 1) | MC8SeventhBit;
+		// Timebase
+		_MC8Memory[pos++] = _timeBase;
+
+		for (var i = 0; i < _channels.length; i++) {
+			
+
+		}
+	}
+
+	this.saveSequence = function () {
+		this.saveSequenceData();
+		var dataBytes = this.saveMC8Memory();
+
+		// TODO: Encode bytes to bitstream
+		// TODO: Playback bitstream as audio
+	}
+
+	/////////////////////////////
+	// Load sequencer memory
+	/////////////////////////////
 
 	// load bytes in memory
 	this.loadMC8Memory = function (dataBytes) {
@@ -289,8 +329,7 @@ var MC8Tracker = function () {
 	// Display Transport
 	/////////////////////////////
 
-	this.createTransportTemplate = function()
-	{
+	this.createTransportTemplate = function () {
 		var row = '<tr><td>---</td><td>---</td></tr>';
 		var html = '<table id="transport" class="channel">';
 		html += '<caption>Transport</caption>';
@@ -310,13 +349,12 @@ var MC8Tracker = function () {
 		{ html += row; }
 		html += '</tbody>';
 
-		html +='</table>';
+		html += '</table>';
 
 		return html;
 	}
 
-	this.displayTransportRow = function(step, tr, measureSize)
-	{
+	this.displayTransportRow = function (step, tr, measureSize) {
 		if (0 > step) {
 			tr.cells[0].innerHTML = '&nbsp;';
 			tr.cells[1].innerHTML = '&nbsp;';
@@ -332,8 +370,7 @@ var MC8Tracker = function () {
 		tr.cells[1].innerHTML = (step % measureSize).toString();
 	}
 
-	this.displayTransport = function()
-	{
+	this.displayTransport = function () {
 		var step;
 		// Exit if no timebase
 		if (0 == _timeBase) {
@@ -385,7 +422,7 @@ var MC8Tracker = function () {
 		_channels = new Array();
 		for (var i = 0; i < 8; i++) {
 			var chn = new MC8TrackerChannel(i, config.rowsBeforeEdit, config.rowsAfterEdit);
-			chn.config.editStepUpDownCallback = function(direction){
+			chn.config.editStepUpDownCallback = function (direction) {
 				_sequencer.editStepUpDown(direction);
 			};
 			chn.Init();
@@ -416,7 +453,7 @@ var MC8Tracker = function () {
 
 		// Init text boxes
 		_tbxTempo = $(config.tbxTempoId);
-		_tbxTempo.change(function(){
+		_tbxTempo.change(function () {
 			_tempo = $(this).val();
 		});
 
