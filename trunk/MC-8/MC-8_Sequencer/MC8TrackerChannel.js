@@ -160,16 +160,26 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 	// Edit
 	/////////////////////////////
 
-	this.editStepUpDown = function(direction)
-	{
+	this.editStepUpDown = function (direction) {
 		if (0 == this.Notes.length || this.NoteCurrent >= this.Notes.length) {
 			return;
 		}
 
 		this.NoteCurrentStep += direction;
+
 		if (this.NoteCurrentStep > this.Notes[this.NoteCurrent].StepTime) {
 			this.NoteCurrentStep = 0;
 			this.NoteCurrent++;
+		}
+		else if (this.NoteCurrentStep < 0) {
+			this.NoteCurrent--;
+			if (this.NoteCurrent >= 0) {
+				this.NoteCurrentStep = this.Notes[this.NoteCurrent].StepTime;
+			}
+			else {
+				this.NoteCurrent = 0;
+				this.NoteCurrentStep = 0;
+			}
 		}
 
 		if (0 == this.NoteCurrentStep && this.NoteCurrent < this.Notes.length) {
