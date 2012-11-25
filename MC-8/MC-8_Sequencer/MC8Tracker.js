@@ -4,6 +4,7 @@
 var MC8Tracker = function () {
 	// Config
 	var config = {
+		logViewId: '#AnalyzeLog',
 		channelContainerId: '#seqChannels',
 		selCVPrefixId: '#selCV',
 		tbxTempoId: '#tbxTempo',
@@ -12,6 +13,7 @@ var MC8Tracker = function () {
 		btnPlayPauseId: '#btnPlayPause',
 		btnStopId: '#btnStop',
 		btnSeqAdvance: '#btnSeqAdvance',
+		btnSave: '#btnSave',
 		rowsBeforeEdit: 10,
 		rowsAfterEdit: 10
 	};
@@ -175,14 +177,19 @@ var MC8Tracker = function () {
 	var MC8MemorySize = 0x4000;
 	var MC8EOB = 0xff;
 	var MC8SongConfig = 0x400c; // Song definition starts at this address
+	var MC8DataStart = 0x41c0; // Track data start at this address
 
+	var MC8ByteMask = 0xff; 	// Byte mask
 	var MC8CVCheckMask = 0xc0; // When two high bits are 0 than this is CV data
 	var MC8CVCHMask = 0x07; 	// Channel/CV mask, channel is always 3 lower bits, CV is bits 3-5
 	var MC8StepMask = 0xc0; 	// Mask for determining step two high bits are one -> %11000000
 	var MC8GateMask = 0xe0; 	// Mash for determining gate three high bits are one -> %11100000
 	var MC8SeventhBit = 0x80; // Seventh bit for easier usage
+	var MC8SaveBlockSize = 32; // Block size in bytes
 
 	var _MC8Memory;
+	var _MC8SongSize = 0;
+	var _MC8DataSize = 0;
 
 	this.resetMC8Memory = function () {
 		// Init MC-8 memory
@@ -190,39 +197,150 @@ var MC8Tracker = function () {
 		for (var i = 0; i < _MC8Memory.length; i++) {
 			_MC8Memory[i] = 0;
 		}
+
+		// Reset Values
+		_MC8SongSize = 0;
+		_MC8DataSize = 0;
 	}
 
 	/////////////////////////////
 	// Save sequencer memory
 	/////////////////////////////
 
-	// Save MC-8 momory to data chunks ready for bitstream output
-	this.saveMC8Memory = function () {
+	this.saveMC8MemoryBlocks = function (dataAddr, size, dataBytes) {
+		var checksum;
+		var addr;
+
+		// Calculate No of blocks
+		var blocks = Math.floor(size / MC8SaveBlockSize);
+		if ((blocks * MC8SaveBlockSize) < size) {
+			blocks++;
+		}
+
+		// Store all blocks
+		for (var i = 0; i < blocks; i++) {
+			// Store block end marker
+			dataBytes.push(MC8SaveBlockSize);
+			checksum = MC8SaveBlockSize;
+
+			// Address Hi
+			addr = ((dataAddr | MC8MemoryStart) >> 8) & MC8ByteMask;
+			dataBytes.push(addr);
+			checksum += addr;
+
+			// Address Lo
+			addr = (dataAddr | MC8MemoryStart) & MC8ByteMask;
+			dataBytes.push(addr);
+			checksum += addr;
+
+			// Store All bytes in block and add to checksum
+			for (var j = 0; j < MC8SaveBlockSize; j++) {
+				dataBytes.push(_MC8Memory[dataAddr]);
+				checksum += _MC8Memory[dataAddr++];
+			}
+
+			// Fix Checksum to byte and store it
+			checksum = ((checksum ^ 0xff & 0xff) + 1) & 0xff;
+			dataBytes.push(checksum);
+
+			// Store block end marker
+			dataBytes.push(MC8EOB);
+		}
 	}
+
 
 	this.saveSequenceData = function () {
 		this.resetMC8Memory();
 
 		// Get song config address in array
-		var pos = MC8SongConfig & MC8MemoryMask;
+		var songAdr = MC8SongConfig & MC8MemoryMask;
+		// Get song data address in array
+		var memAdr = MC8DataStart & MC8MemoryMask;
 
-		pos++; // Skip unknown byte
-		pos++; // Skip unknown byte
+		_MC8Memory[songAdr++] = 0xfe; // Unknown byte
+		_MC8Memory[songAdr++] = 0x1f; // Unknown byte
 
 		// Tempo
-		_MC8Memory[pos++] = (_tempo >> 1) | MC8SeventhBit;
+		_MC8Memory[songAdr++] = (_tempo >> 1) | MC8SeventhBit;
 		// Timebase
-		_MC8Memory[pos++] = _timeBase;
+		_MC8Memory[songAdr++] = _timeBase;
 
-		for (var i = 0; i < _channels.length; i++) {
-			
+		for (var ch = 0; ch < _channels.length; ch++) {
+			// Check if any CVs assigned, skip channel if not
+			if (0 == _channels[ch].CVAssinged) {
+				continue;
+			}
 
+			// Check is there any notes, skip if not
+			if (0 == _channels[ch].Notes.length) {
+				continue;
+			}
+
+			// Push CVs to memory
+			for (var cv = 0; cv < 8; cv++) {
+				// Skip if CV is not assigned
+				if (!_channels[ch].CVCheckAssigned(cv))
+				{ continue }
+
+				// Store CV dataType
+				_MC8Memory[songAdr++] = (cv << 3) | ch;
+				// Store Address to song memory
+				_MC8Memory[songAdr++] = (memAdr | MC8MemoryStart) & MC8ByteMask; // Lo byte
+				_MC8Memory[songAdr++] = ((memAdr | MC8MemoryStart) >> 8) & MC8ByteMask; // Hi byte
+
+				// Store CV to memory
+				memAdr = _channels[ch].saveCV(cv, _MC8Memory, memAdr);
+			}
+
+			// Store steptime data type
+			_MC8Memory[songAdr++] = MC8StepMask | ch;
+			// Store Address to song memory
+			_MC8Memory[songAdr++] = (memAdr | MC8MemoryStart) & MC8ByteMask; // Lo byte
+			_MC8Memory[songAdr++] = ((memAdr | MC8MemoryStart) >> 8) & MC8ByteMask; // Hi byte
+
+			// Push steptime to memory
+			memAdr = _channels[ch].saveStep(_MC8Memory, memAdr);
+
+			// Store gate data type
+			_MC8Memory[songAdr++] = MC8GateMask | ch;
+			// Store Address to song memory
+			_MC8Memory[songAdr++] = (memAdr | MC8MemoryStart) & MC8ByteMask; // Lo byte
+			_MC8Memory[songAdr++] = ((memAdr | MC8MemoryStart) >> 8) & MC8ByteMask; // Hi byte
+
+			// Push gates to memory
+			memAdr = _channels[ch].saveGate(_MC8Memory, memAdr);
 		}
+
+		// Store end marker and last address
+		_MC8Memory[songAdr++] = MC8EOB;
+		// Store Address to song memory
+		_MC8Memory[songAdr++] = (memAdr | MC8MemoryStart) & MC8ByteMask; // Lo byte
+		_MC8Memory[songAdr++] = ((memAdr | MC8MemoryStart) >> 8) & MC8ByteMask; // Hi byte
+
+		// Save song and data size
+		_MC8SongSize = songAdr - (MC8SongConfig & MC8MemoryMask);
+		_MC8DataSize = memAdr - (MC8DataStart & MC8MemoryMask);
 	}
 
+
 	this.saveSequence = function () {
+		// Save sequencer to MC-8 memory
 		this.saveSequenceData();
-		var dataBytes = this.saveMC8Memory();
+
+		// Save MC-8 memory to data chunks ready for bitstream output
+		var dataBytes = new Array();
+
+		// Write song blocks
+		this.saveMC8MemoryBlocks(MC8SongConfig & MC8MemoryMask, _MC8SongSize, dataBytes);
+
+		// Write data blocks
+		this.saveMC8MemoryBlocks(MC8DataStart & MC8MemoryMask, _MC8DataSize, dataBytes);
+
+		// Write no more data
+		dataBytes.push(0);
+
+		// Display encoded
+		$(config.logViewId).append('Bytes: ' + dataBytes.join(', ') + "<br/>\n");
 
 		// TODO: Encode bytes to bitstream
 		// TODO: Playback bitstream as audio
@@ -477,6 +595,11 @@ var MC8Tracker = function () {
 		// btn Stop
 		$(config.btnStopId).click(function () {
 			_sequencer.stopSequencer();
+		});
+
+		// btn Save
+		$(config.btnSave).click(function () {
+			_sequencer.saveSequence();
 		});
 	};
 

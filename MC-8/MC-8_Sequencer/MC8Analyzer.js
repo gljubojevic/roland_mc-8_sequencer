@@ -7,8 +7,7 @@
 // http: //uglyhack.appspot.com/webaudiotoy/
 
 // Declare and make instance of analyzer object
-var MC8Analyzer = function ()
-{
+var MC8Analyzer = function () {
 	// Self ref
 	var _analyzer = this;
 
@@ -19,7 +18,7 @@ var MC8Analyzer = function ()
 		btnLoadFromWaveId: '#btnLoadFromWave',
 		btnLoadDemoId: '#btnLoadDemo',
 		btnPlayWaveId: '#btnAnalyzerPlayWave',
-		btnDumpBitsId:'#btnAnalyzerDumpBits',
+		btnDumpBitsId: '#btnAnalyzerDumpBits',
 		btnDumpBytesId: '#btnAnalyzerDumpBytes',
 		btnDumpBitsAndBytesId: '#btnAnalyzerDumpBitsAndBytes',
 		selLoFreqToleranceId: '#loFreqTolerance',
@@ -29,22 +28,20 @@ var MC8Analyzer = function ()
 		hiFreqTolerance: 25
 	};
 
-	var audioContext = new window.webkitAudioContext();		// Create Audio Context
-	var bufferSource = audioContext.createBufferSource();	// Create buffer source;
+	var audioContext = new window.webkitAudioContext(); 	// Create Audio Context
+	var bufferSource = audioContext.createBufferSource(); // Create buffer source;
 
 	// Store reference to sequence bytes here
 	this.SequencerBits = null;
 	this.SequencerBytes = null;
 	this.SequencerBitsAndBytes = null;
 
-	this.log = function ()
-	{
-		$(config.logViewId).append([].slice.call(arguments) + "<br/>\n")
+	this.log = function () {
+		$(config.logViewId).append([].slice.call(arguments) + "<br/>\n");
 		//console.log('MC8Analyzer',[].slice.call(arguments));
 	};
 
-	this.logClear = function ()
-	{
+	this.logClear = function () {
 		$(config.logViewId).empty();
 	};
 
@@ -68,8 +65,7 @@ var MC8Analyzer = function ()
 	/////////////////////////////
 
 	// Analyze wave
-	this.analyzeAudioBuffer = function ()
-	{
+	this.analyzeAudioBuffer = function () {
 		freqDec = new MC8FrequencyDecoder();
 		freqDec.frequencyDetect(bufferSource.buffer.getChannelData(0), bufferSource.buffer.sampleRate);
 		//this.log("No Freq detected:" + freqDec._frequencyData.length);
@@ -91,7 +87,7 @@ var MC8Analyzer = function ()
 	}
 
 	// Display Bytes
-	this.dumpBytes = function() {
+	this.dumpBytes = function () {
 		this.log("Bytes:\n" + this.SequencerBytes.join(', '));
 	}
 
@@ -107,13 +103,12 @@ var MC8Analyzer = function ()
 	/////////////////////////////
 
 	// Just for playback of audio source
-	this.playAudioBuffer = function ()
-	{
+	this.playAudioBuffer = function () {
 		//bufferSource.noteOff();
 		bufferSource.noteOn(0);
 	};
 
-	this.enableUICmd = function(){
+	this.enableUICmd = function () {
 		$(config.btnLoadFromWaveId).prop('disabled', false);
 		$(config.btnPlayWaveId).prop('disabled', false);
 		_analyzer.log("Wave loaded");
@@ -130,40 +125,33 @@ var MC8Analyzer = function ()
 	/////////////////////////////
 
 	// When Wave is loaded set buffer objects
-	this.callbackAudioLoaded = function (evt)
-	{
+	this.callbackAudioLoaded = function (evt) {
 		// Check if really loaded
-		if (evt.target.readyState != FileReader.DONE)
-		{
+		if (evt.target.readyState != FileReader.DONE) {
 			this.Log("Error wave not loaded!");
 			return;
 		}
 
-		if (audioContext.decodeAudioData)
-		{
+		if (audioContext.decodeAudioData) {
 			audioContext.decodeAudioData(
 				evt.target.result,
-				function (buffer)
-				{
+				function (buffer) {
 					bufferSource.buffer = buffer;
 					bufferSource.connect(audioContext.destination);
 					_analyzer.enableUICmd();
 				},
-				function (e)
-				{
+				function (e) {
 					_analyzer.log("cannot decode mp3", e);
 				}
 			);
 		}
-		else
-		{
+		else {
 			bufferSource.buffer = audioContext.createBuffer(evt.target.result, false);
 			_analyzer.enableUICmd();
 		}
 	}
 
-	this.loadFromUrl = function(url)
-	{
+	this.loadFromUrl = function (url) {
 		// Load asynchronously
 		var request = new XMLHttpRequest();
 		request.open("GET", url, true);
@@ -177,18 +165,17 @@ var MC8Analyzer = function ()
 	}
 
 
-	this.callbackLoadProgram = function (file)
-	{
+	this.callbackLoadProgram = function (file) {
 		var reader = new FileReader();
 		reader.onload = this.callbackAudioLoaded;
 		reader.readAsArrayBuffer(file);
 
-//		reader.onloadend = function (evt)
-//		{
-//			if (evt.target.readyState == FileReader.DONE)
-//			{	$(audioContainerId).append('<audio src="' + evt.target.result + '" controls></audio>');		}
-//		};
-//		reader.readAsDataURL(file);
+		//		reader.onloadend = function (evt)
+		//		{
+		//			if (evt.target.readyState == FileReader.DONE)
+		//			{	$(audioContainerId).append('<audio src="' + evt.target.result + '" controls></audio>');		}
+		//		};
+		//		reader.readAsDataURL(file);
 	};
 
 	/////////////////////////////
@@ -196,8 +183,7 @@ var MC8Analyzer = function ()
 	/////////////////////////////
 
 	// Init and attach
-	this.initAnalyzer = function (callbackLoadSequence)
-	{
+	this.initAnalyzer = function (callbackLoadSequence) {
 		// Set callback
 		config.callbackLoadSequence = callbackLoadSequence;
 
@@ -254,8 +240,7 @@ var MC8Analyzer = function ()
 		loFreq.empty();
 		hiFreq.empty();
 
-		for (var i = 0; i < 55; i += 5)
-		{
+		for (var i = 0; i < 55; i += 5) {
 			var opt = '<option value="' + i + '">' + i + '%</option>';
 			loFreq.append(opt);
 			hiFreq.append(opt);
@@ -274,4 +259,4 @@ var MC8Analyzer = function ()
 
 	// Return entire object
 	return this;
-}();
+} ();
