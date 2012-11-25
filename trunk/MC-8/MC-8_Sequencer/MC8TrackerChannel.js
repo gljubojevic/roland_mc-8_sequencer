@@ -102,18 +102,48 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 		}
 	}
 
-	this.loadGate = function (from, count, data)
-	{
+	this.loadStep = function (from, count, data) {
+		for (var i = 0; i < count; i++) {
+			this.Notes[i].StepTime = data[from++];
+		}
+	}
+
+	this.loadGate = function (from, count, data) {
 		for (var i = 0; i < count; i++) {
 			this.Notes[i].Gate = data[from++];
 		}
 	}
 
-	this.loadStep = function (from, count, data)
-	{
-		for (var i = 0; i < count; i++) {
-			this.Notes[i].StepTime = data[from++];
+	/////////////////////////////
+	// Data saving
+	/////////////////////////////
+
+	// TODO: Calculate measure end
+	this.saveCV = function (cv, mem, dataAdr) {
+		var cvAdr = "CV" + cv;
+
+		// Copy CV to memory
+		for (var i = 0; i < this.Notes.length; i++) {
+			mem[dataAdr++] = this.Notes[i][cvAdr];
 		}
+
+		return dataAdr;
+	}
+
+	this.saveStep = function (mem, dataAdr) {
+		for (var i = 0; i < this.Notes.length; i++) {
+			mem[dataAdr++] = this.Notes[i].StepTime;
+		}
+
+		return dataAdr;
+	}
+
+	this.saveGate = function (mem, dataAdr) {
+		for (var i = 0; i < this.Notes.length; i++) {
+			mem[dataAdr++] = this.Notes[i].Gate;
+		}
+
+		return dataAdr;
 	}
 
 	/////////////////////////////
