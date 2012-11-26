@@ -1,4 +1,5 @@
 ﻿/// <reference path="MC8Analyzer.js" />
+/// <reference path="MC8BitStreamEncoder.js" />
 /// <reference path="MC8TrackerChannel.js" />
 
 var MC8Tracker = function () {
@@ -342,7 +343,12 @@ var MC8Tracker = function () {
 		// Display encoded
 		$(config.logViewId).append('Bytes: ' + dataBytes.join(', ') + "<br/>\n");
 
-		// TODO: Encode bytes to bitstream
+		// Encode bytes to bitstream
+		var enc = new MC8BitStreamEncoder();
+		enc.BitStreamEncode(dataBytes);
+
+		$(config.logViewId).append('Bits: ' + enc.Encoded + "<br/>\n");
+
 		// TODO: Playback bitstream as audio
 	}
 
