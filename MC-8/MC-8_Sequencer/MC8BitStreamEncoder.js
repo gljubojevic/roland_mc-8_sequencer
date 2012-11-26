@@ -14,6 +14,9 @@
 	var MC8LeadAndTrailDuration = 10;
 	var MC8LeadAndTrailOnes = MC8LeadAndTrailDuration / (1 / HIFreqHz * LogicOneHIFreqPeriods);
 
+	var audioContext = new window.webkitAudioContext(); 	// Create Audio Context
+	var oscilator = null;
+
 	this.Encoded = '';
 
 	// Encode bytes to bits LSB first
@@ -59,5 +62,42 @@
 		bitStream.push(Array(MC8LeadAndTrailOnes).join('1'));
 
 		this.Encoded = bitStream.join('');
+	}
+
+	this.StopAudioData = function () {
+		if (null == oscilator) {
+			return;
+		}
+
+		// Stop Playback
+		alert(oscilator.playbackState);
+		if (0 != oscilator.playbackState) {
+			oscilator.noteOff(0);
+		}
+	}
+
+	this.PlayAudioData = function () {
+
+		if (null == oscilator) {
+			// Create oscilator
+			oscilator = audioContext.createOscillator();
+			// Set oscilator sine wave
+			oscilator.type = 0;
+			oscilator.frequency.value = HIFreqHz;
+		}
+		else {
+			this.StopAudioData();
+		}
+
+		// TODO: Set all timed freq changes
+		oscilator.frequency.setValueAtTime(HIFreqHz, 0);
+		oscilator.frequency.setValueAtTime(LOFreqHz, 1);
+		oscilator.frequency.setValueAtTime(0, 3);
+
+		// Connect oscilator output to output
+		oscilator.connect(audioContext.destination);
+
+		// Start Playback
+		oscilator.noteOn(0);
 	}
 }

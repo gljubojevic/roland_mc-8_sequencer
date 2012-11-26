@@ -350,6 +350,7 @@ var MC8Tracker = function () {
 		$(config.logViewId).append('Bits: ' + enc.Encoded + "<br/>\n");
 
 		// TODO: Playback bitstream as audio
+		enc.PlayAudioData();
 	}
 
 	/////////////////////////////
