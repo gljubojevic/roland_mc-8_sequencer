@@ -1,4 +1,4 @@
-﻿function MC8BitStreamEncoder()
+﻿function MC8BitStreamEncoder(AudioContext)
 {
 	// Constants
 	var HIFreqHz = 2100;
@@ -14,8 +14,8 @@
 	var MC8LeadAndTrailDuration = 10;
 	var MC8LeadAndTrailOnes = MC8LeadAndTrailDuration / (1 / HIFreqHz * LogicOneHIFreqPeriods);
 
-	var audioContext = new window.webkitAudioContext(); 	// Create Audio Context
-	var oscilator = null;
+	var audioContext = AudioContext;
+	var oscillator = null;
 
 	this.Encoded = '';
 
@@ -64,40 +64,33 @@
 		this.Encoded = bitStream.join('');
 	}
 
-	this.StopAudioData = function () {
-		if (null == oscilator) {
-			return;
-		}
 
+	this.StopAudioData = function () {
 		// Stop Playback
-		alert(oscilator.playbackState);
-		if (0 != oscilator.playbackState) {
-			oscilator.noteOff(0);
+		if (null != oscillator && 0 != oscillator.playbackState) {
+			oscillator.noteOff(0);
 		}
 	}
 
 	this.PlayAudioData = function () {
+		this.StopAudioData();
 
-		if (null == oscilator) {
-			// Create oscilator
-			oscilator = audioContext.createOscillator();
-			// Set oscilator sine wave
-			oscilator.type = 0;
-			oscilator.frequency.value = HIFreqHz;
-		}
-		else {
-			this.StopAudioData();
-		}
+		// Create oscillator
+		oscillator = audioContext.createOscillator();
+		// Set oscilator sine wave
+		oscillator.type = 0;
+		oscillator.frequency.value = HIFreqHz;
 
 		// TODO: Set all timed freq changes
-		oscilator.frequency.setValueAtTime(HIFreqHz, 0);
-		oscilator.frequency.setValueAtTime(LOFreqHz, 1);
-		oscilator.frequency.setValueAtTime(0, 3);
+		// NOTE: Keep in mind to calculuate current time
+		oscillator.frequency.setValueAtTime(HIFreqHz, audioContext.currentTime + 0);
+		oscillator.frequency.setValueAtTime(LOFreqHz, audioContext.currentTime + 1);
+		oscillator.frequency.setValueAtTime(0, audioContext.currentTime + 3);
 
 		// Connect oscilator output to output
-		oscilator.connect(audioContext.destination);
+		oscillator.connect(audioContext.destination);
 
 		// Start Playback
-		oscilator.noteOn(0);
+		oscillator.noteOn(0);
 	}
 }

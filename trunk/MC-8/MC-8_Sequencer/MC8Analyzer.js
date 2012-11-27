@@ -28,11 +28,8 @@ var MC8Analyzer = function () {
 		hiFreqTolerance: 25
 	};
 
-	//var audioContext = new window.webkitAudioContext(); 	// Create Audio Context
-	//var bufferSource = audioContext.createBufferSource(); // Create buffer source;
-
 	var audioContext = null; 	// Create Audio Context
-	var bufferSource = null; // Create buffer source;
+	var bufferSource = null;	// Create buffer source;
 
 	// Store reference to sequence bytes here
 	this.SequencerBits = null;
