@@ -28,8 +28,11 @@ var MC8Analyzer = function () {
 		hiFreqTolerance: 25
 	};
 
-	var audioContext = new window.webkitAudioContext(); 	// Create Audio Context
-	var bufferSource = audioContext.createBufferSource(); // Create buffer source;
+	//var audioContext = new window.webkitAudioContext(); 	// Create Audio Context
+	//var bufferSource = audioContext.createBufferSource(); // Create buffer source;
+
+	var audioContext = null; 	// Create Audio Context
+	var bufferSource = null; // Create buffer source;
 
 	// Store reference to sequence bytes here
 	this.SequencerBits = null;
@@ -183,7 +186,13 @@ var MC8Analyzer = function () {
 	/////////////////////////////
 
 	// Init and attach
-	this.initAnalyzer = function (callbackLoadSequence) {
+	this.initAnalyzer = function (callbackLoadSequence, AudioContext) {
+		// Set Global Audio context
+		audioContext = AudioContext;
+
+		// Create buffer source;
+		bufferSource = audioContext.createBufferSource();
+
 		// Set callback
 		config.callbackLoadSequence = callbackLoadSequence;
 
@@ -205,13 +214,6 @@ var MC8Analyzer = function () {
 			if (null != config.callbackLoadSequence) {
 				config.callbackLoadSequence(_analyzer.SequencerBytes);
 			}
-
-			//if (MC8Sequencer) {
-			//	MC8Sequencer.loadSequence(_analyzer.SequencerBytes);
-			//}
-			//if (MC8Tracker) {
-			//	MC8Tracker.loadSequence(_analyzer.SequencerBytes);
-			//}
 		});
 
 		// btn Play
