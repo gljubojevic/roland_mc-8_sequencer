@@ -19,6 +19,8 @@ var MC8Tracker = function () {
 		rowsAfterEdit: 10
 	};
 
+	var audioContext = null;
+
 	var _sequencer = this;
 
 	var _channels; 				// All channels
@@ -26,6 +28,8 @@ var MC8Tracker = function () {
 	var _timeBase = 0; 			// Current timebase
 	var _currentStep = 0;
 	var _playingTimer = null; // Indication sequencer playing or not
+
+	var _bitStreamEncoder = null;
 
 	// UI ref
 	var _channelContainer;
@@ -344,13 +348,12 @@ var MC8Tracker = function () {
 		$(config.logViewId).append('Bytes: ' + dataBytes.join(', ') + "<br/>\n");
 
 		// Encode bytes to bitstream
-		var enc = new MC8BitStreamEncoder();
-		enc.BitStreamEncode(dataBytes);
+		_bitStreamEncoder.BitStreamEncode(dataBytes);
 
-		$(config.logViewId).append('Bits: ' + enc.Encoded + "<br/>\n");
+		$(config.logViewId).append('Bits: ' + _bitStreamEncoder.Encoded + "<br/>\n");
 
 		// TODO: Playback bitstream as audio
-		enc.PlayAudioData();
+		_bitStreamEncoder.PlayAudioData();
 	}
 
 	/////////////////////////////
@@ -526,7 +529,13 @@ var MC8Tracker = function () {
 	/////////////////////////////
 
 	// Init and attach
-	this.initSequencer = function () {
+	this.initSequencer = function (AudioContext) {
+		
+		// Store Audio context
+		audioContext = AudioContext;
+
+		// Create encoder for saving and encoding
+		_bitStreamEncoder = new MC8BitStreamEncoder(audioContext);
 
 		// Get Container ref
 		_channelContainer = $(config.channelContainerId);

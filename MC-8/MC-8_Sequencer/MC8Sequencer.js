@@ -14,6 +14,8 @@ var MC8Sequencer = function () {
 		rowsAfterEdit: 5
 	};
 
+	var audioContext = null;
+
 	var _sequencer = this;
 
 	var _channels; 		// All chennels
@@ -235,7 +237,11 @@ var MC8Sequencer = function () {
 	/////////////////////////////
 
 	// Init and attach
-	this.initSequencer = function () {
+	this.initSequencer = function (AudioContext) {
+
+		// Store Audio context
+		audioContext = AudioContext;
+
 		// Create empty channels
 		_channels = new Array();
 		for (var i = 0; i < 8; i++) {
