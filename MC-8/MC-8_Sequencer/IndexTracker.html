@@ -15,14 +15,19 @@
 		// Start/Init
 		$(document).ready(function ()
 		{
+			// Create Audio Context
+			audioContext = new window.webkitAudioContext();
+
 			// Init sequencer
 			MC8Tracker.initSequencer();
 
 			// Init Analyzer
-			MC8Analyzer.initAnalyzer(function(data){
-				MC8Tracker.loadSequence(data);
-			});
-
+			MC8Analyzer.initAnalyzer(
+				function(data){
+					MC8Tracker.loadSequence(data);
+				},
+				audioContext
+			);
 		});
 	</script>
 </head>
