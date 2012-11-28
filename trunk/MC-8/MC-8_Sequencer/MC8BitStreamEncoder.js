@@ -42,7 +42,8 @@
 		var bitStream = new Array();
 
 		// Add leading ones
-		bitStream.push(Array(MC8LeadAndTrailOnes).join('1'));
+		//bitStream.push(Array(MC8LeadAndTrailOnes).join('1'));
+		
 		// Add first separator as first byte marker
 		bitStream.push('110');
 
@@ -59,7 +60,7 @@
 		}
 
 		// Add trailing ones
-		bitStream.push(Array(MC8LeadAndTrailOnes).join('1'));
+		//bitStream.push(Array(MC8LeadAndTrailOnes).join('1'));
 
 		this.Encoded = bitStream.join('');
 	}
