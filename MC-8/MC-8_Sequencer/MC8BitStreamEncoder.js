@@ -78,11 +78,17 @@
 
 		// Create oscillator
 		oscillator = audioContext.createOscillator();
-		// Set oscilator sine wave
+		// Set oscillator sine wave
 		oscillator.type = 0;
+		// Set oscillator default frequency
 		oscillator.frequency.value = HIFreqHz;
 
+		// Clear All previous timed values
+
+
 		// TODO: Set all timed freq changes
+
+
 		// NOTE: Keep in mind to calculuate current time
 		oscillator.frequency.setValueAtTime(HIFreqHz, audioContext.currentTime + 0);
 		oscillator.frequency.setValueAtTime(LOFreqHz, audioContext.currentTime + 1);
