@@ -12,7 +12,7 @@
 
 	// Duration of leading and trailing signal in sec
 	var MC8LeadAndTrailDuration = 10;
-	var MC8LeadAndTrailOnes = MC8LeadAndTrailDuration / (1 / HIFreqHz * LogicOneHIFreqPeriods);
+	//var MC8LeadAndTrailOnes = MC8LeadAndTrailDuration / (1 / HIFreqHz * LogicOneHIFreqPeriods);
 
 	var audioContext = AudioContext;
 	var oscillator = null;
@@ -62,6 +62,7 @@
 		// Add trailing ones
 		//bitStream.push(Array(MC8LeadAndTrailOnes).join('1'));
 
+		// Finaly export bit stream as string
 		this.Encoded = bitStream.join('');
 	}
 
@@ -76,28 +77,66 @@
 	this.PlayAudioData = function () {
 		this.StopAudioData();
 
-		// Create oscillator
+		// Create oscillator, sine wave, HI freq default
 		oscillator = audioContext.createOscillator();
-		// Set oscillator sine wave
 		oscillator.type = 0;
-		// Set oscillator default frequency
 		oscillator.frequency.value = HIFreqHz;
 
 		// Clear All previous timed values
-
-
-		// TODO: Set all timed freq changes
-
-
-		// NOTE: Keep in mind to calculuate current time
-		oscillator.frequency.setValueAtTime(HIFreqHz, audioContext.currentTime + 0);
-		oscillator.frequency.setValueAtTime(LOFreqHz, audioContext.currentTime + 1);
-		oscillator.frequency.setValueAtTime(0, audioContext.currentTime + 3);
+		oscillator.frequency.cancelScheduledValues(0);
 
 		// Connect oscilator output to output
 		oscillator.connect(audioContext.destination);
 
+		// Calculate bit 1 and 0 duration
+		// NOTE: I might need to add some time because of freq switching
+		var oneDuration = 1 / HIFreqHz * (LogicOneHIFreqPeriods+0.071);
+		var zeroDuration = 1 / LOFreqHz * (LogicZeroLOFreqPeriods+0.2);
+
+		// NOTE: Keep in mind to calculuate everything relative to current time in audio context
+		// Get Current time + 1sec in audio context so we can schedule correct freq change
+		// Note: 1 sec should be enough time to schedule all values
+		var schTime = 1 + audioContext.currentTime;
+
+		// First schedule HI freq for 10 sec for lead freq
+		var currentBit = '1';
+		oscillator.frequency.setValueAtTime(HIFreqHz, schTime);
+//		schTime += MC8LeadAndTrailDuration;
+
+		// Set all timed freq changes
+		for (var i = 0; i < this.Encoded.length; i++) {
+
+			// Check if bit value changed
+			if (currentBit != this.Encoded.charAt(i)) {
+				currentBit = this.Encoded.charAt(i);
+
+				// Change oscillator freq
+				if ('1' == currentBit) {
+					oscillator.frequency.setValueAtTime(HIFreqHz, schTime);
+				}
+				else {
+					oscillator.frequency.setValueAtTime(LOFreqHz, schTime);
+				}
+			}
+
+			// Just add duration for current bit
+			if ('1' == currentBit) {
+				schTime += oneDuration;
+			}
+			else {
+				schTime += zeroDuration;
+			}
+		}
+
+		// Schedule trailing HI freq for 10 sec
+		oscillator.frequency.setValueAtTime(HIFreqHz, schTime);
+		schTime += MC8LeadAndTrailDuration;
+		// And switch it off after traling time
+		oscillator.frequency.setValueAtTime(0, schTime);
+
 		// Start Playback
 		oscillator.noteOn(0);
+
+		// TODO: schedule playback stop
 	}
 }
