@@ -16,6 +16,7 @@
 
 	var audioContext = AudioContext;
 	var oscillator = null;
+	var oscillatorGain = null;
 
 	this.Encoded = '';
 
@@ -81,17 +82,23 @@
 		oscillator = audioContext.createOscillator();
 		oscillator.type = 0;
 		oscillator.frequency.value = HIFreqHz;
+		oscillator.frequency.cancelScheduledValues(0); 	// Clear All previous timed values
 
-		// Clear All previous timed values
-		oscillator.frequency.cancelScheduledValues(0);
+		// Create Oscillator gain node
+		oscillatorGain = audioContext.createGainNode()
+		oscillatorGain.gain.value = 0.8;
+		oscillatorGain.gain.cancelScheduledValues(0);	// Clear All previous timed values
 
-		// Connect oscilator output to output
-		oscillator.connect(audioContext.destination);
+		// Connect oscilator and gain output to output
+		oscillator.connect(oscillatorGain);
+		oscillatorGain.connect(audioContext.destination);
 
 		// Calculate bit 1 and 0 duration
 		// NOTE: I might need to add some time because of freq switching
-		var oneDuration = 1 / HIFreqHz * (LogicOneHIFreqPeriods+0.071);
-		var zeroDuration = 1 / LOFreqHz * (LogicZeroLOFreqPeriods+0.2);
+		var oneDuration = 1 / HIFreqHz * (LogicOneHIFreqPeriods + 0.0);
+		var zeroDuration = 1 / LOFreqHz * (LogicZeroLOFreqPeriods + 0.0);
+		// For test make 0 duration same as 1 duration
+		zeroDuration = oneDuration;
 
 		// NOTE: Keep in mind to calculuate everything relative to current time in audio context
 		// Get Current time + 1sec in audio context so we can schedule correct freq change
@@ -101,7 +108,8 @@
 		// First schedule HI freq for 10 sec for lead freq
 		var currentBit = '1';
 		oscillator.frequency.setValueAtTime(HIFreqHz, schTime);
-//		schTime += MC8LeadAndTrailDuration;
+		oscillatorGain.gain.setValueAtTime(0.8, schTime);
+		schTime += MC8LeadAndTrailDuration;
 
 		// Set all timed freq changes
 		for (var i = 0; i < this.Encoded.length; i++) {
@@ -113,9 +121,11 @@
 				// Change oscillator freq
 				if ('1' == currentBit) {
 					oscillator.frequency.setValueAtTime(HIFreqHz, schTime);
+					oscillatorGain.gain.setValueAtTime(0.8, schTime);
 				}
 				else {
 					oscillator.frequency.setValueAtTime(LOFreqHz, schTime);
+					oscillatorGain.gain.setValueAtTime(1.0, schTime);
 				}
 			}
 
@@ -130,6 +140,7 @@
 
 		// Schedule trailing HI freq for 10 sec
 		oscillator.frequency.setValueAtTime(HIFreqHz, schTime);
+		oscillatorGain.gain.setValueAtTime(0.8, schTime);
 		schTime += MC8LeadAndTrailDuration;
 		// And switch it off after traling time
 		oscillator.frequency.setValueAtTime(0, schTime);
