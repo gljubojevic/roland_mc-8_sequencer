@@ -20,12 +20,12 @@ table.channel caption
 	margin:4px 0px 2px 0px;
 }
 
-table.channel input
+table.channel input[type=text]
 {
-	width:35px;
+	width:30px;
 	font:normal normal bold 12px Arial;
 }
-		
+
 table.channel td,
 table.channel th
 {

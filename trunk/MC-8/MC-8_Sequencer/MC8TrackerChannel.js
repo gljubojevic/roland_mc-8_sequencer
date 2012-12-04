@@ -12,8 +12,12 @@
 	this.StepTime = 0;
 }
 
-function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
-{
+function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit) {
+
+	// Constants
+	var MC8MeasueEndMask = 0x80;
+	var MC8CVMask = 0x7f;
+
 	// Definition of note names
 	this.NoteDisplay=['C -','C#-','D -','D#-','E -', 'F -','F#-','G -','G#-','A -','A#-','B -'];
 
@@ -42,6 +46,7 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 	var _container = null;
 	var _channelDisplay = null;
 	var _tbxStepTime = null;
+	var _cbxMeasueEnd = null;
 	var _tbxGate = null;
 	var _tbxCVs = null;
 	var _tableRowsAfterEdit = null;
@@ -261,13 +266,12 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 	// Display
 	/////////////////////////////
 
-	this.createTemplate = function (CVs)
-	{
+	this.createTemplate = function (CVs) {
 		// Get Row for single note
 		var noteRow = '<tr>';
 		for (var i = 0; i < CVs.length; i++)
 		{ noteRow += '<td>---</td>'; }
-		noteRow += '<td>---</td><td>---</td></tr>'
+		noteRow += '<td>---</td><td>-</td><td>---</td></tr>'
 
 		// Build table
 		var html = '<table id="ch' + this.ChannelNo + '" class="channel">';
@@ -275,7 +279,7 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 		html += '<thead><tr>';
 		if (CVs.length > 0)
 		{ html += '<th>' + CVs.join('</th><th>') + '</th>'; }
-		html += '<th>Step</th><th>Gate</th></tr></thead>';
+		html += '<th>Step</th><th>ME</th><th>Gate</th></tr></thead>';
 
 		html += '<tbody class="NotesBeforeEdit">';
 		for (var i = 0; i < this.config.rowsBeforeEdit; i++)
@@ -286,6 +290,7 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 		for (var i = 0; i < CVs.length; i++)
 		{ html += '<td><input id="CH' + this.ChannelNo + CVs[i] + '" type="text" size="3" maxlength="3" /></td>'; }
 		html += '<td><input id="CH' + this.ChannelNo + 'Step" type="text" size="3" maxlength="3" /></td>';
+		html += '<td><input id="CH' + this.ChannelNo + 'MeasureEnd" type="checkbox" /></td>';
 		html += '<td><input id="CH' + this.ChannelNo + 'Gate" type="text" size="3" maxlength="3" /></td>';
 		html += '</tr></tbody>';
 
@@ -293,6 +298,13 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 		for (var i = 0; i < this.config.rowsBeforeEdit; i++)
 		{ html += noteRow; }
 		html += '</tbody>';
+		html += '<tfoot>';
+		html += '<tr><td colspan="' + CVs.length + 3 + '">';
+		html += '<a title="Add note">[Add]</a>&nbsp;';
+		html += '<a title="Insert note">[Ins]</a>&nbsp;';
+		html += '<a title="Delete note">[Del]</a>';
+		html += '</td></tr>';
+		html += '</tfoot>';
 
 		html += '</table>';
 
@@ -333,6 +345,7 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 		}
 		_tbxGate = $('#CH' + this.ChannelNo + 'Gate', _channelDisplay);
 		_tbxStepTime = $('#CH' + this.ChannelNo + 'Step', _channelDisplay);
+		_cbxMeasueEnd = $('#CH' + this.ChannelNo + 'MeasureEnd', _channelDisplay);
 
 		// Atach keyboard events
 		var chn = this;
@@ -353,7 +366,7 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 
 	this.getNoteString = function (cv)
 	{
-		cv &= 0x7f; // Fix Measure end
+		cv &= MC8CVMask; // Get only CV
 		return this.NoteDisplay[cv % 12].replace('-', Math.floor(cv/ 12));
 	}
 
@@ -365,15 +378,19 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 
 	this.displayNoteRow = function (tr, note, CVs) {
 		var cellIdx = 0;
+		var measureEnd = false;
 		for (var i = 0; i < CVs.length; i++) {
-			//tr.cells[cellIdx++].innerText = note[CVs[i]];
 			tr.cells[cellIdx++].innerText = this.getNoteString(note[CVs[i]]);
+			if (0 != (note[CVs[i]] & MC8MeasueEndMask)) {
+				measureEnd = true;
+			}
 		}
-		tr.cells[cellIdx++].innerText = note.StepTime;
+		tr.cells[cellIdx++].innerText = note.StepTime + 1;	// Step time is always 1-256
+		tr.cells[cellIdx++].innerText = measureEnd ? 'Y' : ' ';
 		tr.cells[cellIdx++].innerText = note.Gate;
 	}
 
-	this.displayNotes = function() {
+	this.displayNotes = function () {
 		var step;
 		var noteIdx;
 		var tableRows;
@@ -391,11 +408,16 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 
 		// Display Current note in editor
 		if (noteIdx < this.Notes.length && 0 == this.NoteCurrentStep) {
+			var measueEnd = false;
 			for (var i = 0; i < CVs.length; i++) {
-				_tbxCVs[CVs[i]].val(this.Notes[noteIdx][CVs[i]]);
+				_tbxCVs[CVs[i]].val(this.Notes[noteIdx][CVs[i]] & MC8CVMask);
+				if (0 != (this.Notes[noteIdx][CVs[i]] & MC8MeasueEndMask)) {
+					measueEnd = true;
+				}
 			}
 			_tbxGate.val(this.Notes[noteIdx].Gate);
-			_tbxStepTime.val(this.Notes[noteIdx].StepTime);
+			_tbxStepTime.val(this.Notes[noteIdx].StepTime + 1); // Step time is always 1-256
+			_cbxMeasueEnd.attr('checked', measueEnd);
 		}
 		else {
 			// Empty boxes
@@ -404,6 +426,7 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 			}
 			_tbxGate.val('');
 			_tbxStepTime.val('');
+			_cbxMeasueEnd.attr('checked', false);
 		}
 
 
@@ -430,7 +453,7 @@ function MC8TrackerChannel(channelNo, rowsBeforeEdit, rowsAfterEdit)
 		// Display notes before
 		noteIdx = this.NoteCurrent;
 		step = this.NoteCurrentStep;
-		for (var i = this.config.rowsBeforeEdit-1; i >=0 ; i--) {
+		for (var i = this.config.rowsBeforeEdit - 1; i >= 0; i--) {
 			step--;
 			if (step < 0) {
 				noteIdx--;
