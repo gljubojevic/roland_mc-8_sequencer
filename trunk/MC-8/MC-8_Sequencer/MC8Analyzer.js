@@ -16,6 +16,7 @@ var MC8Analyzer = function () {
 		logViewId: '#AnalyzeLog',
 		inputFileId: '#FileLoadMC8Data',
 		btnLoadFromWaveId: '#btnLoadFromWave',
+		btnRecordAudioId: '#btnRecordAudio',
 		btnLoadDemoId: '#btnLoadDemo',
 		btnPlayWaveId: '#btnAnalyzerPlayWave',
 		btnDumpBitsId: '#btnAnalyzerDumpBits',
@@ -23,6 +24,7 @@ var MC8Analyzer = function () {
 		btnDumpBitsAndBytesId: '#btnAnalyzerDumpBitsAndBytes',
 		selLoFreqToleranceId: '#loFreqTolerance',
 		selHiFreqToleranceId: '#hiFreqTolerance',
+		canvasAudioVisualizeId: '#audioVisualize',
 		callbackLoadSequence: null,
 		loFreqTolerance: 10,
 		hiFreqTolerance: 25
@@ -177,6 +179,19 @@ var MC8Analyzer = function () {
 		//		};
 		//		reader.readAsDataURL(file);
 	};
+
+	/////////////////////////////
+	// Record
+	/////////////////////////////
+
+	this.recordAudio = function () {
+
+	}
+
+	this.recordAudioStop = function () {
+
+	}
+
 
 	/////////////////////////////
 	// Init
