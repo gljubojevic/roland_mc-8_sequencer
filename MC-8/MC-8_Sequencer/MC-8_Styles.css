@@ -52,3 +52,8 @@ fieldset
 	float:none;
 	clear:both;
 }
+
+canvas#audioVisualize
+{
+	border:solid 1px red;
+}
