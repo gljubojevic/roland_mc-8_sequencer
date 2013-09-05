@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MC-8_DumpReader", "MC-8_DumpReader\MC-8_DumpReader.csproj", "{9AE8C277-718C-4C01-A0C1-5EB1B4BA643F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MC-8_Sequencer", "MC-8_Sequencer\MC-8_Sequencer.csproj", "{8189A83B-F7F5-460E-AB5F-8B2828E460EC}"
