@@ -5,6 +5,7 @@
 
 // http: //airtightinteractive.com/demos/js/reactive/
 // http: //uglyhack.appspot.com/webaudiotoy/
+// https: //github.com/cwilso/AudioRecorder
 
 // Declare and make instance of analyzer object
 var MC8Analyzer = function () {
@@ -24,7 +25,7 @@ var MC8Analyzer = function () {
 		btnDumpBitsAndBytesId: '#btnAnalyzerDumpBitsAndBytes',
 		selLoFreqToleranceId: '#loFreqTolerance',
 		selHiFreqToleranceId: '#hiFreqTolerance',
-		canvasAudioVisualizeId: '#audioVisualize',
+		canvasAudioVisualizeId: 'audioVisualize',
 		callbackLoadSequence: null,
 		loFreqTolerance: 10,
 		hiFreqTolerance: 25
@@ -184,14 +185,82 @@ var MC8Analyzer = function () {
 	// Record
 	/////////////////////////////
 
-	this.recordAudio = function () {
+	var _audioInput;
+	var _audioAnalizer;
+	var _audioRecording = false;
 
+	var _audioVisualizeContext = null;
+	var _audioVisualizeWidth;
+	var _audioVisualizeHeight;
+	var _audioVisualizeAnimFrame;
+
+	this.recordAudioToggle = function () {
+
+		// Check allready recording
+		if (_audioRecording) {
+
+			// Stop draw
+			window.cancelAnimationFrame(_audioVisualizeAnimFrame);
+			_audioVisualizeAnimFrame = null;
+			// Clear draw
+			_audioVisualizeContext.clearRect(0, 0, _audioVisualizeWidth, _audioVisualizeHeight);
+
+			// Stop Audio
+			_audioInput.disconnect();
+			//_audioAnalizer.disconnect();
+			_audioInput = null;
+			_audioAnalizer = null;
+
+			_audioRecording = false;
+			return;
+		}
+
+		// Start Recording
+		navigator.getUserMedia(
+			{ audio: true },
+			recordAudioStarted,
+			function (e) {
+				alert('Error getting audio');
+				console.log(e);
+			}
+		);
 	}
 
-	this.recordAudioStop = function () {
+	this.recordAudioStarted = function (audioStream) {
 
+		_audioInput = audioContext.createMediaStreamSource(audioStream);
+		//TODO: Gain
+		//TODO: Mono
+		_audioAnalizer = audioContext.createAnalyser();
+		_audioInput.connect(_audioAnalizer);
+		//TODO: Record buffer
+		_audioRecording = true;
+		audioVisualize();
 	}
 
+
+	this.audioVisualize = function (time) {
+		if (!_audioVisualizeContext) {
+			var canvas = document.getElementById(config.canvasAudioVisualizeId);
+			_audioVisualizeWidth = canvas.width;
+			_audioVisualizeHeight = canvas.height;
+			_audioVisualizeContext = canvas.getContext('2d');
+		}
+
+		var waveByteData = new Uint8Array(_audioVisualizeWidth);
+		_audioAnalizer.getByteTimeDomainData(waveByteData);
+
+		// TODO: Scale data
+		_audioVisualizeContext.clearRect(0, 0, _audioVisualizeWidth, _audioVisualizeHeight);
+		_audioVisualizeContext.beginPath();
+		_audioVisualizeContext.moveTo(0, waveByteData[0] / 2);
+		for (var i = 1; i < waveByteData.length; i++) {
+			_audioVisualizeContext.lineTo(i, waveByteData[i] / 2);
+		}
+		_audioVisualizeContext.stroke();
+
+		_audioVisualizeAnimFrame = window.requestAnimationFrame(audioVisualize);
+	}
 
 	/////////////////////////////
 	// Init
@@ -199,6 +268,19 @@ var MC8Analyzer = function () {
 
 	// Init and attach
 	this.initAnalyzer = function (callbackLoadSequence, AudioContext) {
+
+		if (!navigator.getUserMedia) {
+			navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+		}
+
+		if (!navigator.cancelAnimationFrame) {
+			navigator.cancelAnimationFrame = navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
+		}
+
+		if (!navigator.requestAnimationFrame) {
+			navigator.requestAnimationFrame = navigator.webkitRequestAnimationFrame || navigator.mozRequestAnimationFrame;
+		}
+
 		// Set Global Audio context
 		audioContext = AudioContext;
 
@@ -246,6 +328,11 @@ var MC8Analyzer = function () {
 		// btn dump bits and bytes
 		$(config.btnDumpBitsAndBytesId).click(function () {
 			_analyzer.dumpBitsAndBytes();
+		});
+
+		// btn record audio / stop recording
+		$(config.btnRecordAudioId).click(function () {
+			_analyzer.recordAudioToggle();
 		});
 
 		// Freq Tolerance
