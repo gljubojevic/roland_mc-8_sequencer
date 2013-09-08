@@ -20,6 +20,10 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -71,6 +75,10 @@
     <Content Include="MC8FrequencyDecoder.js" />
     <Content Include="MC8Sequencer.js" />
     <Content Include="MC8SequencerChannel.js" />
+    <Content Include="Recorderjs\example_simple_exportwav.html" />
+    <Content Include="Recorderjs\recorder.js" />
+    <Content Include="Recorderjs\recorderWorker.js" />
+    <Content Include="WAWaveDisplay.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -78,6 +86,17 @@
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
+    <Content Include="WebMIDIAPIShim\images\bg_hr.png" />
+    <Content Include="WebMIDIAPIShim\images\blacktocat.png" />
+    <Content Include="WebMIDIAPIShim\images\icon_download.png" />
+    <Content Include="WebMIDIAPIShim\images\sprite_download.png" />
+    <Content Include="WebMIDIAPIShim\index.html" />
+    <Content Include="WebMIDIAPIShim\javascripts\main.js" />
+    <Content Include="WebMIDIAPIShim\stylesheets\pygment_trac.css" />
+    <Content Include="WebMIDIAPIShim\stylesheets\stylesheet.css" />
+    <Content Include="WebMIDIAPIShim\tests\index.html" />
+    <Content Include="WebMIDIAPIShim\tests\multi.html" />
+    <Content Include="WebMIDIAPIShim\WebMIDIAPI.js" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
@@ -87,6 +106,13 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Recorderjs\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="WebMIDIAPIShim\params.json" />
+    <Content Include="WebMIDIAPIShim\README.md" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
