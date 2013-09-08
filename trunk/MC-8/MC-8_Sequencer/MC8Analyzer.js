@@ -3,9 +3,12 @@
 /// <reference path="MC8Sequencer.js" />
 /// <reference path="MC8Tracker.js" />
 
-// http: //airtightinteractive.com/demos/js/reactive/
-// http: //uglyhack.appspot.com/webaudiotoy/
-// https: //github.com/cwilso/AudioRecorder
+// http://airtightinteractive.com/demos/js/reactive/
+// http://uglyhack.appspot.com/webaudiotoy/
+// https://github.com/cwilso/AudioRecorder
+// https://github.com/mattdiamond/Recorderjs
+// https://github.com/cwilso/WebMIDIAPIShim
+// http://jazz-soft.net/
 
 // Declare and make instance of analyzer object
 var MC8Analyzer = function () {
