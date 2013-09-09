@@ -2,6 +2,8 @@
 /// <reference path="MC8FrequencyDecoder.js" />
 /// <reference path="MC8Sequencer.js" />
 /// <reference path="MC8Tracker.js" />
+/// <reference path="WAWaveDisplay.js" />
+/// <reference path="Recorederjs/recorder.js" />
 
 // http://airtightinteractive.com/demos/js/reactive/
 // http://uglyhack.appspot.com/webaudiotoy/
@@ -189,19 +191,27 @@ var MC8Analyzer = function () {
 	/////////////////////////////
 
 	var _audioInput;
-	var _audioAnalizer;
+//	var _audioAnalizer;
 	var _audioRecording = false;
 
-	var _audioVisualizeContext = null;
-	var _audioVisualizeWidth;
-	var _audioVisualizeHeight;
-	var _audioVisualizeAnimFrame;
+//	var _audioVisualizeContext = null;
+//	var _audioVisualizeWidth;
+//	var _audioVisualizeHeight;
+//	var _audioVisualizeAnimFrame;
+
+	var _waveDisplay = null;
+	var _recorder = null;
 
 	this.recordAudioToggle = function () {
+
+	    if (!_waveDisplay) {
+	        _waveDisplay = WAWaveDisplay(config.canvasAudioVisualizeId, audioContext);
+	    }
 
 		// Check allready recording
 		if (_audioRecording) {
 
+            /*
 			// Stop draw
 			window.cancelAnimationFrame(_audioVisualizeAnimFrame);
 			_audioVisualizeAnimFrame = null;
@@ -213,7 +223,11 @@ var MC8Analyzer = function () {
 			//_audioAnalizer.disconnect();
 			_audioInput = null;
 			_audioAnalizer = null;
+            */
 
+		    _recorder.Stop();
+
+		    _waveDisplay.RenderStop();
 			_audioRecording = false;
 			return;
 		}
@@ -232,38 +246,44 @@ var MC8Analyzer = function () {
 	this.recordAudioStarted = function (audioStream) {
 
 		_audioInput = audioContext.createMediaStreamSource(audioStream);
-		//TODO: Gain
+	    //TODO: Gain
 		//TODO: Mono
-		_audioAnalizer = audioContext.createAnalyser();
-		_audioInput.connect(_audioAnalizer);
-		//TODO: Record buffer
+
+		//_audioAnalizer = audioContext.createAnalyser();
+		//_audioInput.connect(_audioAnalizer);
+
+	    // Record buffer
+		_recorder = new Recorder(_audioInput);
+		_recorder.Record();
 		_audioRecording = true;
-		audioVisualize();
+
+	    //audioVisualize();
+		_waveDisplay.RenderStart(_audioInput);
 	}
 
 
-	this.audioVisualize = function (time) {
-		if (!_audioVisualizeContext) {
-			var canvas = document.getElementById(config.canvasAudioVisualizeId);
-			_audioVisualizeWidth = canvas.width;
-			_audioVisualizeHeight = canvas.height;
-			_audioVisualizeContext = canvas.getContext('2d');
-		}
+	//this.audioVisualize = function (time) {
+	//	if (!_audioVisualizeContext) {
+	//		var canvas = document.getElementById(config.canvasAudioVisualizeId);
+	//		_audioVisualizeWidth = canvas.width;
+	//		_audioVisualizeHeight = canvas.height;
+	//		_audioVisualizeContext = canvas.getContext('2d');
+	//	}
 
-		var waveByteData = new Uint8Array(_audioVisualizeWidth);
-		_audioAnalizer.getByteTimeDomainData(waveByteData);
+	//	var waveByteData = new Uint8Array(_audioVisualizeWidth);
+	//	_audioAnalizer.getByteTimeDomainData(waveByteData);
 
-		// TODO: Scale data
-		_audioVisualizeContext.clearRect(0, 0, _audioVisualizeWidth, _audioVisualizeHeight);
-		_audioVisualizeContext.beginPath();
-		_audioVisualizeContext.moveTo(0, waveByteData[0] / 2);
-		for (var i = 1; i < waveByteData.length; i++) {
-			_audioVisualizeContext.lineTo(i, waveByteData[i] / 2);
-		}
-		_audioVisualizeContext.stroke();
+	//	// TODO: Scale data
+	//	_audioVisualizeContext.clearRect(0, 0, _audioVisualizeWidth, _audioVisualizeHeight);
+	//	_audioVisualizeContext.beginPath();
+	//	_audioVisualizeContext.moveTo(0, waveByteData[0] / 2);
+	//	for (var i = 1; i < waveByteData.length; i++) {
+	//		_audioVisualizeContext.lineTo(i, waveByteData[i] / 2);
+	//	}
+	//	_audioVisualizeContext.stroke();
 
-		_audioVisualizeAnimFrame = window.requestAnimationFrame(audioVisualize);
-	}
+	//	_audioVisualizeAnimFrame = window.requestAnimationFrame(audioVisualize);
+	//}
 
 	/////////////////////////////
 	// Init
@@ -276,13 +296,13 @@ var MC8Analyzer = function () {
 			navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 		}
 
-		if (!navigator.cancelAnimationFrame) {
-			navigator.cancelAnimationFrame = navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
-		}
+		//if (!navigator.cancelAnimationFrame) {
+		//	navigator.cancelAnimationFrame = navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
+		//}
 
-		if (!navigator.requestAnimationFrame) {
-			navigator.requestAnimationFrame = navigator.webkitRequestAnimationFrame || navigator.mozRequestAnimationFrame;
-		}
+		//if (!navigator.requestAnimationFrame) {
+		//	navigator.requestAnimationFrame = navigator.webkitRequestAnimationFrame || navigator.mozRequestAnimationFrame;
+		//}
 
 		// Set Global Audio context
 		audioContext = AudioContext;
