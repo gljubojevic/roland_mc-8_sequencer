@@ -15,6 +15,7 @@ var MC8Tracker = function () {
 		btnStopId: '#btnStop',
 		btnSeqAdvance: '#btnSeqAdvance',
 		btnSave: '#btnSave',
+		btnLoad: '#btnLoad',
 		rowsBeforeEdit: 10,
 		rowsAfterEdit: 10
 	};
@@ -616,6 +617,11 @@ var MC8Tracker = function () {
 		// btn Save
 		$(config.btnSave).click(function () {
 			_sequencer.saveSequence();
+		});
+
+	    // btn Load
+		$(config.btnLoad).click(function () {
+		    alert("Not implemeted.");
 		});
 	};
 
