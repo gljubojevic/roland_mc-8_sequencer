@@ -50,12 +50,10 @@ And here’s the program data for anyone who might have an MC-8 to load it into:
 <img src="./demo_factory_bach_invention/mc8-programs-24.jpg" width="24%" />
 <img src="./demo_factory_bach_invention/mc8-programs-25.jpg" width="24%" />
 <img src="./demo_factory_bach_invention/mc8-programs-26.jpg" width="24%" />
-
 <img src="./demo_factory_bach_invention/mc8-programs-27.jpg" width="24%" />
 <img src="./demo_factory_bach_invention/mc8-programs-28.jpg" width="24%" />
 <img src="./demo_factory_bach_invention/mc8-programs-29.jpg" width="24%" />
 <img src="./demo_factory_bach_invention/mc8-programs-30.jpg" width="24%" />
-
 <img src="./demo_factory_bach_invention/mc8-programs-31.jpg" width="24%" />
 <img src="./demo_factory_bach_invention/mc8-programs-32.jpg" width="24%" />
 
