@@ -31,9 +31,7 @@ for the entire score. In the 2nd part of the video, you hear the entire mixed pi
 with the MC-8 displaying the CV data for channel 1.
 
 Here’s an mp3 of just the music:  
-<audio controls src="./demo_factory_bach_invention/bach.mp3" type="audio/mpeg">
-	<a href="./demo_factory_bach_invention/bach.mp3">Download audio</a>
-</audio>
+<audio controls src="./demo_factory_bach_invention/bach.mp3" type="audio/mpeg"></audio>
 
 And here’s the program data for anyone who might have an MC-8 to load it into:  
 <audio controls src="./demo_factory_bach_invention/bach-mc8-data.mp3" type="audio/mpeg">
