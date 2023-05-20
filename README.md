@@ -31,11 +31,13 @@ for the entire score. In the 2nd part of the video, you hear the entire mixed pi
 with the MC-8 displaying the CV data for channel 1.
 
 Here’s an mp3 of just the music:  
-<audio controls src="./demo_factory_bach_invention/bach.mp3" type="audio/mpeg"></audio>
+<audio controls src="./demo_factory_bach_invention/bach.mp3" type="audio/mpeg">
+	<a href="./demo_factory_bach_invention/bach.mp3">Download bach.mp3</a>
+</audio>
 
 And here’s the program data for anyone who might have an MC-8 to load it into:  
 <audio controls src="./demo_factory_bach_invention/bach-mc8-data.mp3" type="audio/mpeg">
-	<a href="./demo_factory_bach_invention/bach-mc8-data.mp3">Download audio</a>
+	<a href="./demo_factory_bach_invention/bach-mc8-data.mp3">Download bach-mc8-data.mp3</a>
 </audio>
 
 ***Music sheets and setup***  
@@ -61,6 +63,32 @@ And here’s the program data for anyone who might have an MC-8 to load it into:
 
 This is one of the demo programs supplied in a supplement to the Roland MC-8 manual. It’s a piece called “Odd Rhythms,” written by the “godfather” of the MC-8, Ralph Dyck. I decided to spend a couple of hours punching this thing in to see what it sounds like. The lead, bass and chords are playing back on a [Roland SH-101](https://www.vintagesynth.com/roland/sh101.php) (overdubbed via the MC-8’s tape sync one monophonic line at a time), and the cymbal and conga are playing back on a [SCI Pro-One](http://www.vintagesynth.com/sci/seqpro1.php). For the cymbal, I had to use VCF accents instead of the VCA accents the score calls for, because the Pro-One doesn’t have a CV in for the VCA. I didn’t spend much time on the sounds or on the mix, so it is what it is. But as you can see, you can get as musically complex as you want with the MC-8.
 
-Here’s an mp3 of just the music:
+Here’s an mp3 of just the music:  
+<audio controls src="./demo_song_odd_rhythms/babylonians.mp3" type="audio/mpeg">
+	<a href="./demo_song_odd_rhythms/babylonians.mp3">Download babylonians.mp3</a>
+</audio>
 
 And here’s an mp3 of the MC-8 data for this piece for those of you who have an MC-8 to load it into:
+
+***Music sheets and setup***  
+<img src="./demo_song_odd_rhythms/mc8-programs-011.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-032.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-042.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-051.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-061.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-07.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-08.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-20.jpg" width="24%" />
+
+***Program data sheets***  
+<img src="./demo_song_odd_rhythms/mc8-programs-09.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-10.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-11.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-12.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-13.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-14.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-15.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-16.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-17.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-18.jpg" width="24%" />
+<img src="./demo_song_odd_rhythms/mc8-programs-19.jpg" width="24%" />
