@@ -9,7 +9,7 @@ Here is great resource about MC-8 https://rolandmc8.wordpress.com/
 
 ## Blank MC-8 Program Data Sheet
 Here’s a blank MC-8 program data sheet for you to print out and scribble on!
-![](./doc/mc8-data-sheet.jpg "blank MC-8 program data sheet" | 50%)
+<img src="./doc/mc8-data-sheet.jpg" width="50%" />
 
 ## Demo site
 Currently not working because it is oooooold and web audio init fails...  
