@@ -1,4 +1,5 @@
-﻿*.user
+﻿.DS_Store
+*.user
 /MC-8/.vs
 /MC-8/MC-8_Sequencer/bin
 /MC-8/MC-8_Sequencer/obj
