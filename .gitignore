@@ -1,0 +1,6 @@
+﻿*.user
+/MC-8/.vs
+/MC-8/MC-8_Sequencer/bin
+/MC-8/MC-8_Sequencer/obj
+/MC-8/MC-8_DumpReader/bin
+/MC-8/MC-8_DumpReader/obj
