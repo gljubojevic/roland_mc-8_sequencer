@@ -3,7 +3,7 @@
 /// <reference path="MC8Sequencer.js" />
 /// <reference path="MC8Tracker.js" />
 /// <reference path="WAWaveDisplay.js" />
-/// <reference path="Recorederjs/recorder.js" />
+/// <reference path="Recorderjs/recorder.js" />
 
 // http://airtightinteractive.com/demos/js/reactive/
 // http://uglyhack.appspot.com/webaudiotoy/
@@ -36,7 +36,7 @@ var MC8Analyzer = function () {
 		hiFreqTolerance: 25
 	};
 
-	var audioContext = null; 	// Create Audio Context
+	var getAudioContext = null; // Create Audio Context function
 	var bufferSource = null;	// Create buffer source;
 
 	// Store reference to sequence bytes here
@@ -46,27 +46,11 @@ var MC8Analyzer = function () {
 
 	this.log = function () {
 		$(config.logViewId).append([].slice.call(arguments) + "<br/>\n");
-		//console.log('MC8Analyzer',[].slice.call(arguments));
 	};
 
 	this.logClear = function () {
 		$(config.logViewId).empty();
 	};
-
-	//	this.createAudio = function()
-	//	{
-	//		processor = audioContext.createJavaScriptNode(2048, 1, 1);
-	//		analyser = audioContext.createAnalyser();
-
-	//		bufferSource.connect(audioContext.destination);
-	//		bufferSource.connect(analyser);
-
-	//		analyser.connect(processor);
-	//		processor.connect(audioContext.destination);
-
-	//		bufferSource.noteOn(0);
-	//	};
-
 
 	/////////////////////////////
 	// Analyze
@@ -112,7 +96,6 @@ var MC8Analyzer = function () {
 
 	// Just for playback of audio source
 	this.playAudioBuffer = function () {
-		//bufferSource.noteOff();
 		bufferSource.noteOn(0);
 	};
 
@@ -139,13 +122,13 @@ var MC8Analyzer = function () {
 			this.Log("Error wave not loaded!");
 			return;
 		}
-
-		if (audioContext.decodeAudioData) {
-			audioContext.decodeAudioData(
+		audioCtx = getAudioContext();
+		if (audioCtx.decodeAudioData) {
+			audioCtx.decodeAudioData(
 				evt.target.result,
 				function (buffer) {
 					bufferSource.buffer = buffer;
-					bufferSource.connect(audioContext.destination);
+					bufferSource.connect(audioCtx.destination);
 					_analyzer.enableUICmd();
 				},
 				function (e) {
@@ -154,7 +137,7 @@ var MC8Analyzer = function () {
 			);
 		}
 		else {
-			bufferSource.buffer = audioContext.createBuffer(evt.target.result, false);
+			bufferSource.buffer = audioCtx.createBuffer(evt.target.result, false, 44100);
 			_analyzer.enableUICmd();
 		}
 	}
@@ -165,7 +148,7 @@ var MC8Analyzer = function () {
 		request.open("GET", url, true);
 		request.responseType = "arraybuffer";
 		request.onload = function () {
-			bufferSource.buffer = audioContext.createBuffer(request.response, false);
+			bufferSource.buffer = getAudioContext().createBuffer(request.response, false, 44100);
 			_analyzer.enableUICmd();
 		};
 
@@ -177,13 +160,6 @@ var MC8Analyzer = function () {
 		var reader = new FileReader();
 		reader.onload = this.callbackAudioLoaded;
 		reader.readAsArrayBuffer(file);
-
-		//		reader.onloadend = function (evt)
-		//		{
-		//			if (evt.target.readyState == FileReader.DONE)
-		//			{	$(audioContainerId).append('<audio src="' + evt.target.result + '" controls></audio>');		}
-		//		};
-		//		reader.readAsDataURL(file);
 	};
 
 	/////////////////////////////
@@ -200,7 +176,7 @@ var MC8Analyzer = function () {
 
 		// Init Display
 	    if (!_waveDisplay) {
-	        _waveDisplay = new WAWaveDisplay(config.canvasAudioVisualizeId, audioContext);
+	        _waveDisplay = new WAWaveDisplay(config.canvasAudioVisualizeId, getAudioContext());
 	    }
 
 		// Check allready recording and stop it
@@ -224,7 +200,7 @@ var MC8Analyzer = function () {
 	}
 
 	this.recordAudioStarted = function (audioStream) {
-		_audioInput = audioContext.createMediaStreamSource(audioStream);
+		_audioInput = getAudioContext().createMediaStreamSource(audioStream);
 	    //TODO: Gain
 
 	    // Record buffer
@@ -240,34 +216,42 @@ var MC8Analyzer = function () {
 	// Init
 	/////////////////////////////
 
+	// Create buffer source;
+	this.initBufferSource = function () {
+		if (null != bufferSource) {
+			return;
+		}
+		bufferSource = getAudioContext().createBufferSource();
+	}
+
 	// Init and attach
-	this.initAnalyzer = function (callbackLoadSequence, AudioContext) {
+	this.initAnalyzer = function (callbackLoadSequence, getAudioCtx) {
 
 		if (!navigator.getUserMedia) {
 			navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 		}
 
 		// Set Global Audio context
-		audioContext = AudioContext;
-
-		// Create buffer source;
-		bufferSource = audioContext.createBufferSource();
+		getAudioContext = getAudioCtx;
 
 		// Set callback
 		config.callbackLoadSequence = callbackLoadSequence;
 
 		//File
 		$(config.inputFileId).change(function () {
+			_analyzer.initBufferSource();
 			_analyzer.callbackLoadProgram(this.files[0]);
 		});
 
 		// Load demo
 		$(config.btnLoadDemoId).click(function () {
+			_analyzer.initBufferSource();
 			_analyzer.loadFromUrl('test_bach-mc8-data.wav');
 		});
 
 		// btn Load from Wave
 		$(config.btnLoadFromWaveId).click(function () {
+			_analyzer.initBufferSource();
 			// Call this in context of analyzer
 			_analyzer.analyzeAudioBuffer.call(_analyzer);
 			// Load in sequencer

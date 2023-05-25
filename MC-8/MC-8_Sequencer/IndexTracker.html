@@ -17,21 +17,29 @@
 	<script src="MC8TrackerChannel.js" type="text/javascript"></script>
 	<script src="MC8Tracker.js" type="text/javascript"></script>
 	<script type="text/javascript">
+		// on demand audio context
+		var audioCtx = null;
+		function getAudioContext() {
+			if (null == audioCtx) {
+				audioCtx = new AudioContext();
+			}
+			return audioCtx;
+		}
 		// Start/Init
 		$(document).ready(function ()
 		{
 			// Create Audio Context
-			audioContext = new window.webkitAudioContext();
+			audioContext = new AudioContext();
 
 			// Init sequencer
-			MC8Tracker.initSequencer(audioContext);
+			MC8Tracker.initSequencer();
 
 			// Init Analyzer
 			MC8Analyzer.initAnalyzer(
 				function(data){
 					MC8Tracker.loadSequence(data);
 				},
-				audioContext
+				getAudioContext
 			);
 		});
 	</script>
